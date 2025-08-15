@@ -1,0 +1,442 @@
+# ISM Foundation Search Configuration
+# Defines datasets, views, filters, and computed fields
+
+datasets:
+  SKULOC:
+    baseTable: skuloc
+
+    columns:
+      sku_id:
+        sql: "base.sku_id"
+        type: long
+        alias: "skuId"
+      location_number:
+        sql: "base.location_number"
+        type: int
+        alias: "locationNumber"
+      available_qty:
+        sql: "base.available_qty"
+        type: long
+        alias: "availableQty"
+      ecomm_pick_reserve:
+        sql: "base.ecomm_pick_reserve"
+        type: long
+        alias: "ecommPickReserve"
+      ecomm_pack_reserve:
+        sql: "base.ecomm_pack_reserve"
+        type: long
+        alias: "ecommPackReserve"
+      dotcom_reserve:
+        sql: "base.dotcom_reserve"
+        type: long
+        alias: "dotcomReserve"
+      retail_reserve:
+        sql: "base.retail_reserve"
+        type: long
+        alias: "retailReserve"
+      merch_reserve_qty:
+        sql: "base.merch_reserve_qty"
+        type: long
+        alias: "merchReserveQty"
+      financial_onhand_qty:
+        sql: "base.financial_onhand_qty"
+        type: long
+        alias: "financialOnhandQty"
+      updated_ts:
+        sql: "base.updated_ts"
+        type: timestamp
+        alias: "updatedAt"
+
+    filters:
+      divisionNumber:
+        column: "base.division_number"
+        type: int
+        op: "="
+      locationNumber:
+        column: "base.location_number"
+        type: int
+        op: "="
+      locationNumberIn:
+        column: "base.location_number"
+        type: "int[]"
+        op: "IN"
+        max: 5000
+      skuId:
+        column: "base.sku_id"
+        type: long
+        op: "="
+      skuIdIn:
+        column: "base.sku_id"
+        type: "long[]"
+        op: "IN"
+        max: 5000
+      channel:
+        column: "base.channel"
+        type: string
+        op: "="
+        allowed: ["D", "R"]
+      atsFlag:
+        column: "base.ats_flag"
+        type: string
+        op: "="
+        allowed: ["Y", "N"]
+      availableQtyGte:
+        column: "base.available_qty"
+        type: long
+        op: ">="
+      availableQtyLte:
+        column: "base.available_qty"
+        type: long
+        op: "<="
+      updatedAfter:
+        column: "base.updated_ts"
+        type: timestamp
+        op: ">="
+
+    joins:
+      location:
+        type: left
+        table: "location_master loc"
+        on: "loc.loc_number = base.location_number"
+        columns:
+          location_name:
+            sql: "loc.loc_name"
+            type: string
+            alias: "locationName"
+          location_type:
+            sql: "loc.loc_type"
+            type: string
+            alias: "locationType"
+          region_name:
+            sql: "loc.region_name"
+            type: string
+            alias: "regionName"
+
+    computed:
+      ats: "GREATEST(base.available_qty - (base.ecomm_pick_reserve + base.ecomm_pack_reserve), 0)"
+      totalReserve: "base.ecomm_pick_reserve + base.ecomm_pack_reserve + base.merch_reserve_qty"
+      dotcomAts: "GREATEST(base.available_qty - base.dotcom_reserve, 0)"
+      retailAts: "GREATEST(base.available_qty - base.retail_reserve, 0)"
+
+    pagination:
+      keysetColumns: ["sku_id", "location_number"]
+      defaultPageSize: 50
+      maxPageSize: 500
+      maxUnpaginatedRows: 10000
+      allowOffset: true
+
+    defaultSort:
+      - field: "sku_id"
+        direction: "ASC"
+      - field: "location_number"
+        direction: "ASC"
+
+    views:
+      EcommATS:
+        name: "EcommATS"
+        description: "E-commerce available to sell view"
+        columns:
+          - "skuId"
+          - "locationNumber"
+          - "availableQty"
+          - "ecommPickReserve"
+          - "ecommPackReserve"
+        computed:
+          - "ats"
+        filters:
+          - "divisionNumber"
+          - "locationNumberIn"
+          - "skuIdIn"
+          - "channel"
+          - "atsFlag"
+          - "availableQtyGte"
+        defaultPageSize: 50
+        requiredIndexes:
+          - "CREATE INDEX ix_skuloc_sku_loc ON skuloc(sku_id, location_number)"
+          - "CREATE INDEX ix_skuloc_channel ON skuloc(channel)"
+
+      StoreBackroom:
+        name: "StoreBackroom"
+        description: "Store inventory with front/back split"
+        columns:
+          - "skuId"
+          - "locationNumber"
+          - "financialOnhandQty"
+          - "availableQty"
+        filters:
+          - "locationNumber"
+          - "skuIdIn"
+        defaultPageSize: 100
+
+      ReserveAudit:
+        name: "ReserveAudit"
+        description: "All reserve types for audit"
+        columns:
+          - "skuId"
+          - "locationNumber"
+          - "ecommPickReserve"
+          - "ecommPackReserve"
+          - "merchReserveQty"
+          - "dotcomReserve"
+          - "retailReserve"
+        computed:
+          - "totalReserve"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "updatedAfter"
+        defaultSort:
+          - field: "updatedAt"
+            direction: "DESC"
+
+      LocationView:
+        name: "LocationView"
+        description: "SKULOC with location details"
+        columns:
+          - "skuId"
+          - "locationNumber"
+          - "availableQty"
+        includes:
+          - "location"
+        filters:
+          - "locationNumberIn"
+          - "skuIdIn"
+
+  LOCATION_MASTER:
+    baseTable: location_master
+
+    columns:
+      loc_number:
+        sql: "base.loc_number"
+        type: int
+        alias: "locationNumber"
+      loc_name:
+        sql: "base.loc_name"
+        type: string
+        alias: "locationName"
+      loc_type:
+        sql: "base.loc_type"
+        type: string
+        alias: "locationType"
+      region_name:
+        sql: "base.region_name"
+        type: string
+        alias: "regionName"
+      loc_country:
+        sql: "base.loc_country"
+        type: string
+        alias: "country"
+      channel_name:
+        sql: "base.channel_name"
+        type: string
+        alias: "channelName"
+      updated_at:
+        sql: "base.updated_at"
+        type: timestamp
+        alias: "updatedAt"
+
+    filters:
+      locationNumber:
+        column: "base.loc_number"
+        type: int
+        op: "="
+      locationNumberIn:
+        column: "base.loc_number"
+        type: "int[]"
+        op: "IN"
+        max: 1000
+      locationType:
+        column: "base.loc_type"
+        type: string
+        op: "="
+      locationTypeIn:
+        column: "base.loc_type"
+        type: "string[]"
+        op: "IN"
+        allowed: ["STORE", "DC", "VENDOR", "INTRANSIT"]
+      regionName:
+        column: "base.region_name"
+        type: string
+        op: "="
+      regionNameIn:
+        column: "base.region_name"
+        type: "string[]"
+        op: "IN"
+        max: 100
+      country:
+        column: "base.loc_country"
+        type: string
+        op: "="
+
+    pagination:
+      keysetColumns: ["loc_number"]
+      defaultPageSize: 100
+      maxPageSize: 1000
+      maxUnpaginatedRows: 5000
+
+    defaultSort:
+      - field: "loc_number"
+        direction: "ASC"
+
+    views:
+      StoreDirectory:
+        name: "StoreDirectory"
+        description: "Basic store information"
+        columns:
+          - "locationNumber"
+          - "locationName"
+          - "locationType"
+          - "regionName"
+          - "country"
+        filters:
+          - "locationTypeIn"
+          - "regionNameIn"
+          - "country"
+        defaultPageSize: 200
+
+      ActiveStores:
+        name: "ActiveStores"
+        description: "Currently active store locations"
+        columns:
+          - "locationNumber"
+          - "locationName"
+          - "channelName"
+        filters:
+          - "locationType"
+        defaultPageSize: 500
+
+  RSVEHR:
+    baseTable: rsvehr
+
+    columns:
+      id:
+        sql: "base.id"
+        type: long
+      sku_id:
+        sql: "base.sku_id"
+        type: long
+        alias: "skuId"
+      location_number:
+        sql: "base.location_number"
+        type: int
+        alias: "locationNumber"
+      channel:
+        sql: "base.channel"
+        type: string
+      ats_flag:
+        sql: "base.ats_flag"
+        type: string
+        alias: "atsFlag"
+      reservation_type:
+        sql: "base.reservation_type"
+        type: string
+        alias: "reservationType"
+      hard_reservation_qty:
+        sql: "base.hard_reservation_qty"
+        type: long
+        alias: "reservationQty"
+      reservation_status:
+        sql: "base.reservation_status"
+        type: string
+        alias: "reservationStatus"
+      reservation_program:
+        sql: "base.reservation_program"
+        type: string
+        alias: "reservationProgram"
+      hard_reservation_start_ts:
+        sql: "base.hard_reservation_start_ts"
+        type: timestamp
+        alias: "startTime"
+      hard_reservation_end_ts:
+        sql: "base.hard_reservation_end_ts"
+        type: timestamp
+        alias: "endTime"
+      reservation_last_modified_ts:
+        sql: "base.reservation_last_modified_ts"
+        type: timestamp
+        alias: "lastModified"
+
+    filters:
+      skuIdIn:
+        column: "base.sku_id"
+        type: "long[]"
+        op: "IN"
+        max: 5000
+      locationNumberIn:
+        column: "base.location_number"
+        type: "int[]"
+        op: "IN"
+        max: 1000
+      channel:
+        column: "base.channel"
+        type: string
+        op: "="
+        allowed: ["D", "R"]
+      reservationStatus:
+        column: "base.reservation_status"
+        type: string
+        op: "="
+        allowed: ["A", "E", "C"]
+      reservationProgram:
+        column: "base.reservation_program"
+        type: string
+        op: "="
+      startAfter:
+        column: "base.hard_reservation_start_ts"
+        type: timestamp
+        op: ">="
+      endBefore:
+        column: "base.hard_reservation_end_ts"
+        type: timestamp
+        op: "<="
+
+    pagination:
+      keysetColumns: ["id"]
+      defaultPageSize: 100
+      maxPageSize: 500
+      maxUnpaginatedRows: 10000
+
+    defaultSort:
+      - field: "reservation_last_modified_ts"
+        direction: "DESC"
+      - field: "id"
+        direction: "DESC"
+
+    views:
+      ActiveReserves:
+        name: "ActiveReserves"
+        description: "Currently active reservations"
+        columns:
+          - "skuId"
+          - "locationNumber"
+          - "channel"
+          - "reservationType"
+          - "reservationQty"
+          - "startTime"
+          - "endTime"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "channel"
+          - "reservationStatus"
+        defaultPageSize: 100
+
+      ReserveHistory:
+        name: "ReserveHistory"
+        description: "Historical reserve audit trail"
+        columns:
+          - "id"
+          - "skuId"
+          - "locationNumber"
+          - "reservationStatus"
+          - "reservationProgram"
+          - "reservationQty"
+          - "lastModified"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "startAfter"
+          - "endBefore"
+        defaultSort:
+          - field: "lastModified"
+            direction: "DESC"
