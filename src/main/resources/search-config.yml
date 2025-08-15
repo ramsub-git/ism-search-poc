@@ -4,25 +4,25 @@
 datasets:
   SKULOC:
     baseTable: skuloc
-
+    
     columns:
-      sku_id:
+      sku_id: 
         sql: "base.sku_id"
         type: long
         alias: "skuId"
-      location_number:
+      location_number: 
         sql: "base.location_number"
         type: int
         alias: "locationNumber"
-      available_qty:
+      available_qty: 
         sql: "base.available_qty"
         type: long
         alias: "availableQty"
-      ecomm_pick_reserve:
+      ecomm_pick_reserve: 
         sql: "base.ecomm_pick_reserve"
         type: long
         alias: "ecommPickReserve"
-      ecomm_pack_reserve:
+      ecomm_pack_reserve: 
         sql: "base.ecomm_pack_reserve"
         type: long
         alias: "ecommPackReserve"
@@ -46,7 +46,7 @@ datasets:
         sql: "base.updated_ts"
         type: timestamp
         alias: "updatedAt"
-
+    
     filters:
       divisionNumber:
         column: "base.division_number"
@@ -92,7 +92,7 @@ datasets:
         column: "base.updated_ts"
         type: timestamp
         op: ">="
-
+    
     joins:
       location:
         type: left
@@ -111,36 +111,36 @@ datasets:
             sql: "loc.region_name"
             type: string
             alias: "regionName"
-
+    
     computed:
       ats: "GREATEST(base.available_qty - (base.ecomm_pick_reserve + base.ecomm_pack_reserve), 0)"
       totalReserve: "base.ecomm_pick_reserve + base.ecomm_pack_reserve + base.merch_reserve_qty"
       dotcomAts: "GREATEST(base.available_qty - base.dotcom_reserve, 0)"
       retailAts: "GREATEST(base.available_qty - base.retail_reserve, 0)"
-
+    
     pagination:
       keysetColumns: ["sku_id", "location_number"]
       defaultPageSize: 50
       maxPageSize: 500
       maxUnpaginatedRows: 10000
       allowOffset: true
-
+    
     defaultSort:
       - field: "sku_id"
         direction: "ASC"
       - field: "location_number"
         direction: "ASC"
-
+    
     views:
       EcommATS:
         name: "EcommATS"
         description: "E-commerce available to sell view"
-        columns:
-          - "skuId"
-          - "locationNumber"
-          - "availableQty"
-          - "ecommPickReserve"
-          - "ecommPackReserve"
+        columns: 
+          - "sku_id"
+          - "location_number"
+          - "available_qty"
+          - "ecomm_pick_reserve"
+          - "ecomm_pack_reserve"
         computed:
           - "ats"
         filters:
@@ -154,31 +154,31 @@ datasets:
         requiredIndexes:
           - "CREATE INDEX ix_skuloc_sku_loc ON skuloc(sku_id, location_number)"
           - "CREATE INDEX ix_skuloc_channel ON skuloc(channel)"
-
+      
       StoreBackroom:
         name: "StoreBackroom"
         description: "Store inventory with front/back split"
         columns:
-          - "skuId"
-          - "locationNumber"
-          - "financialOnhandQty"
-          - "availableQty"
+          - "sku_id"
+          - "location_number"
+          - "financial_onhand_qty"
+          - "available_qty"
         filters:
           - "locationNumber"
           - "skuIdIn"
         defaultPageSize: 100
-
+      
       ReserveAudit:
         name: "ReserveAudit"
         description: "All reserve types for audit"
         columns:
-          - "skuId"
-          - "locationNumber"
-          - "ecommPickReserve"
-          - "ecommPackReserve"
-          - "merchReserveQty"
-          - "dotcomReserve"
-          - "retailReserve"
+          - "sku_id"
+          - "location_number"
+          - "ecomm_pick_reserve"
+          - "ecomm_pack_reserve"
+          - "merch_reserve_qty"
+          - "dotcom_reserve"
+          - "retail_reserve"
         computed:
           - "totalReserve"
         filters:
@@ -186,16 +186,16 @@ datasets:
           - "locationNumberIn"
           - "updatedAfter"
         defaultSort:
-          - field: "updatedAt"
+          - field: "updated_ts"
             direction: "DESC"
-
+      
       LocationView:
         name: "LocationView"
         description: "SKULOC with location details"
         columns:
-          - "skuId"
-          - "locationNumber"
-          - "availableQty"
+          - "sku_id"
+          - "location_number"
+          - "available_qty"
         includes:
           - "location"
         filters:
@@ -204,7 +204,7 @@ datasets:
 
   LOCATION_MASTER:
     baseTable: location_master
-
+    
     columns:
       loc_number:
         sql: "base.loc_number"
@@ -234,7 +234,7 @@ datasets:
         sql: "base.updated_at"
         type: timestamp
         alias: "updatedAt"
-
+    
     filters:
       locationNumber:
         column: "base.loc_number"
@@ -267,47 +267,47 @@ datasets:
         column: "base.loc_country"
         type: string
         op: "="
-
+    
     pagination:
       keysetColumns: ["loc_number"]
       defaultPageSize: 100
       maxPageSize: 1000
       maxUnpaginatedRows: 5000
-
+    
     defaultSort:
       - field: "loc_number"
         direction: "ASC"
-
+    
     views:
       StoreDirectory:
         name: "StoreDirectory"
         description: "Basic store information"
         columns:
-          - "locationNumber"
-          - "locationName"
-          - "locationType"
-          - "regionName"
-          - "country"
+          - "loc_number"
+          - "loc_name"
+          - "loc_type"
+          - "region_name"
+          - "loc_country"
         filters:
           - "locationTypeIn"
           - "regionNameIn"
           - "country"
         defaultPageSize: 200
-
+      
       ActiveStores:
         name: "ActiveStores"
         description: "Currently active store locations"
         columns:
-          - "locationNumber"
-          - "locationName"
-          - "channelName"
+          - "loc_number"
+          - "loc_name"
+          - "channel_name"
         filters:
           - "locationType"
         defaultPageSize: 500
 
   RSVEHR:
     baseTable: rsvehr
-
+    
     columns:
       id:
         sql: "base.id"
@@ -355,7 +355,7 @@ datasets:
         sql: "base.reservation_last_modified_ts"
         type: timestamp
         alias: "lastModified"
-
+    
     filters:
       skuIdIn:
         column: "base.sku_id"
@@ -389,54 +389,54 @@ datasets:
         column: "base.hard_reservation_end_ts"
         type: timestamp
         op: "<="
-
+    
     pagination:
       keysetColumns: ["id"]
       defaultPageSize: 100
       maxPageSize: 500
       maxUnpaginatedRows: 10000
-
+    
     defaultSort:
       - field: "reservation_last_modified_ts"
         direction: "DESC"
       - field: "id"
         direction: "DESC"
-
+    
     views:
       ActiveReserves:
         name: "ActiveReserves"
         description: "Currently active reservations"
         columns:
-          - "skuId"
-          - "locationNumber"
+          - "sku_id"
+          - "location_number"
           - "channel"
-          - "reservationType"
-          - "reservationQty"
-          - "startTime"
-          - "endTime"
+          - "reservation_type"
+          - "hard_reservation_qty"
+          - "hard_reservation_start_ts"
+          - "hard_reservation_end_ts"
         filters:
           - "skuIdIn"
           - "locationNumberIn"
           - "channel"
           - "reservationStatus"
         defaultPageSize: 100
-
+      
       ReserveHistory:
         name: "ReserveHistory"
         description: "Historical reserve audit trail"
         columns:
           - "id"
-          - "skuId"
-          - "locationNumber"
-          - "reservationStatus"
-          - "reservationProgram"
-          - "reservationQty"
-          - "lastModified"
+          - "sku_id"
+          - "location_number"
+          - "reservation_status"
+          - "reservation_program"
+          - "hard_reservation_qty"
+          - "reservation_last_modified_ts"
         filters:
           - "skuIdIn"
           - "locationNumberIn"
           - "startAfter"
           - "endBefore"
         defaultSort:
-          - field: "lastModified"
+          - field: "reservation_last_modified_ts"
             direction: "DESC"
