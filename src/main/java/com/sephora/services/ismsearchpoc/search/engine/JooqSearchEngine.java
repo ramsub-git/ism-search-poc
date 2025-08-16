@@ -136,7 +136,14 @@ public class JooqSearchEngine implements SearchEngine {
                 // Regular column
                 ColumnDefinition colDef = dataset.getColumns().get(columnName);
                 if (colDef != null) {
-                    Field<?> field = DSL.field(DSL.name(colDef.getSql()));
+                    Field<?> field; 
+                    if (colDef.getSql().contains(".")) {
+                        // Handle qualified column names (table.column)
+                        String[] parts = colDef.getSql().split("\\.", 2);
+                        field = DSL.field(DSL.name(parts[0], parts[1]));
+                    } else {
+                        field = DSL.field(DSL.name(colDef.getSql()));
+                    }
                     String alias = colDef.getEffectiveName(columnName);
                     query.addSelect(field.as(alias));
                 } else {
@@ -160,6 +167,7 @@ public class JooqSearchEngine implements SearchEngine {
         }
     }
 
+
     /**
      * Finds a column from join definitions.
      */
@@ -174,13 +182,20 @@ public class JooqSearchEngine implements SearchEngine {
             if (join != null && join.getColumns() != null) {
                 ColumnDefinition colDef = join.getColumns().get(columnName);
                 if (colDef != null) {
-                    return DSL.field(DSL.name(colDef.getSql()));
+                    // Handle qualified column names properly
+                    if (colDef.getSql().contains(".")) {
+                        String[] parts = colDef.getSql().split("\\.", 2);
+                        return DSL.field(DSL.name(parts[0], parts[1]));
+                    } else {
+                        return DSL.field(DSL.name(colDef.getSql()));
+                    }
                 }
             }
         }
 
         return null;
     }
+    
 
     /**
      * Adds JOIN clauses to the query.

@@ -1,0 +1,106 @@
+# Location Master Dataset Configuration
+# Store, DC, and vendor location information
+
+datasets:
+  LOCATION_MASTER:
+    baseTable: location_master
+
+    columns:
+      loc_number:
+        sql: "loc_number"
+        type: int
+        alias: "locationNumber"
+      loc_name:
+        sql: "loc_name"
+        type: string
+        alias: "locationName"
+      loc_type:
+        sql: "loc_type"
+        type: string
+        alias: "locationType"
+      region_name:
+        sql: "region_name"
+        type: string
+        alias: "regionName"
+      loc_country:
+        sql: "loc_country"
+        type: string
+        alias: "country"
+      channel_name:
+        sql: "channel_name"
+        type: string
+        alias: "channelName"
+      updated_at:
+        sql: "updated_at"
+        type: timestamp
+        alias: "updatedAt"
+
+    filters:
+      locationNumber:
+        column: "loc_number"
+        type: int
+        op: "="
+      locationNumberIn:
+        column: "loc_number"
+        type: "int[]"
+        op: "IN"
+        max: 1000
+      locationType:
+        column: "loc_type"
+        type: string
+        op: "="
+      locationTypeIn:
+        column: "loc_type"
+        type: "string[]"
+        op: "IN"
+        allowed: ["STORE", "DC", "VENDOR", "INTRANSIT"]
+      regionName:
+        column: "region_name"
+        type: string
+        op: "="
+      regionNameIn:
+        column: "region_name"
+        type: "string[]"
+        op: "IN"
+        max: 100
+      country:
+        column: "loc_country"
+        type: string
+        op: "="
+
+    pagination:
+      keysetColumns: ["loc_number"]
+      defaultPageSize: 100
+      maxPageSize: 1000
+      maxUnpaginatedRows: 5000
+
+    defaultSort:
+      - field: "loc_number"
+        direction: "ASC"
+
+    views:
+      StoreDirectory:
+        name: "StoreDirectory"
+        description: "Basic store information"
+        columns:
+          - "loc_number"
+          - "loc_name"
+          - "loc_type"
+          - "region_name"
+          - "loc_country"
+        filters:
+          - "locationTypeIn"
+          - "regionNameIn"
+          - "country"
+        defaultPageSize: 200
+
+      ActiveStores:
+        name: "ActiveStores"
+        description: "Currently active store locations"
+        columns:
+          - "loc_number"
+          - "loc_name"
+          - "channel_name"
+        filters:
+          - "locationType"
+        defaultPageSize: 500

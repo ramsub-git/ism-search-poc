@@ -1,0 +1,184 @@
+# RSVEHR Dataset Configuration
+# Reserve header records for inventory management
+
+datasets:
+  RSVEHR:
+    baseTable: rsvehr
+
+    columns:
+      id:
+        sql: "id"
+        type: long
+      sku_id:
+        sql: "sku_id"
+        type: long
+        alias: "skuId"
+      location_number:
+        sql: "location_number"
+        type: int
+        alias: "locationNumber"
+      channel:
+        sql: "channel"
+        type: string
+      ats_flag:
+        sql: "ats_flag"
+        type: string
+        alias: "atsFlag"
+      reservation_type:
+        sql: "reservation_type"
+        type: string
+        alias: "reservationType"
+      hard_reservation_qty:
+        sql: "hard_reservation_qty"
+        type: long
+        alias: "reservationQty"
+      reservation_status:
+        sql: "reservation_status"
+        type: string
+        alias: "reservationStatus"
+      reservation_program:
+        sql: "reservation_program"
+        type: string
+        alias: "reservationProgram"
+      hard_reservation_start_ts:
+        sql: "hard_reservation_start_ts"
+        type: timestamp
+        alias: "startTime"
+      hard_reservation_end_ts:
+        sql: "hard_reservation_end_ts"
+        type: timestamp
+        alias: "endTime"
+      reservation_last_modified_ts:
+        sql: "reservation_last_modified_ts"
+        type: timestamp
+        alias: "lastModified"
+
+    filters:
+      skuIdIn:
+        column: "sku_id"
+        type: "long[]"
+        op: "IN"
+        max: 5000
+      locationNumberIn:
+        column: "location_number"
+        type: "int[]"
+        op: "IN"
+        max: 1000
+      channel:
+        column: "channel"
+        type: string
+        op: "="
+        allowed: ["D", "R"]
+      reservationStatus:
+        column: "reservation_status"
+        type: string
+        op: "="
+        allowed: ["A", "E", "C"]
+      reservationProgram:
+        column: "reservation_program"
+        type: string
+        op: "="
+      startAfter:
+        column: "hard_reservation_start_ts"
+        type: timestamp
+        op: ">="
+      endBefore:
+        column: "hard_reservation_end_ts"
+        type: timestamp
+        op: "<="
+      # New filter for location type via join
+      locationTypeIn:
+        column: "loc.loc_type"
+        type: "string[]"
+        op: "IN"
+        allowed: ["STORE", "DC", "VENDOR", "INTRANSIT"]
+
+    # Join to location_master for filtering by location attributes
+    joins:
+      location:
+        type: left
+        table: "location_master loc"
+        on: "loc.loc_number = base.location_number"
+        columns:
+          location_name:
+            sql: "loc.loc_name"
+            type: string
+            alias: "locationName"
+          location_type:
+            sql: "loc.loc_type"
+            type: string
+            alias: "locationType"
+          region_name:
+            sql: "loc.region_name"
+            type: string
+            alias: "regionName"
+
+    pagination:
+      keysetColumns: ["id"]
+      defaultPageSize: 100
+      maxPageSize: 500
+      maxUnpaginatedRows: 10000
+
+    defaultSort:
+      - field: "reservation_last_modified_ts"
+        direction: "DESC"
+      - field: "id"
+        direction: "DESC"
+
+    views:
+      ActiveReserves:
+        name: "ActiveReserves"
+        description: "Currently active reservations"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "channel"
+          - "reservation_type"
+          - "hard_reservation_qty"
+          - "hard_reservation_start_ts"
+          - "hard_reservation_end_ts"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "channel"
+          - "reservationStatus"
+        defaultPageSize: 100
+
+      ReserveHistory:
+        name: "ReserveHistory"
+        description: "Historical reserve audit trail"
+        columns:
+          - "id"
+          - "sku_id"
+          - "location_number"
+          - "reservation_status"
+          - "reservation_program"
+          - "hard_reservation_qty"
+          - "reservation_last_modified_ts"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "startAfter"
+          - "endBefore"
+        defaultSort:
+          - field: "reservation_last_modified_ts"
+            direction: "DESC"
+
+      # New view that includes location information
+      ReservesByLocation:
+        name: "ReservesByLocation"
+        description: "Reserves with location details"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "channel"
+          - "reservation_type"
+          - "hard_reservation_qty"
+          - "reservation_status"
+        includes:
+          - "location"
+        filters:
+          - "skuIdIn"
+          - "locationTypeIn"
+          - "reservationStatus"
+        defaultPageSize: 100

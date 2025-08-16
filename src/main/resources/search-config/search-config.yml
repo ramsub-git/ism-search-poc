@@ -1,0 +1,6 @@
+# ISM Foundation Search Configuration - Main Configuration File
+# This file can contain common settings or dataset imports
+# Individual datasets are defined in the datasets/ subdirectory
+
+# Common configuration can go here if needed in future phases
+# For now, all dataset-specific configuration is in individual files

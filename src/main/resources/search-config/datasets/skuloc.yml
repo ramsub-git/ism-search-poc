@@ -1,0 +1,203 @@
+# SKULOC Dataset Configuration
+# SKU Location inventory data with availability and reserves
+
+datasets:
+  SKULOC:
+    baseTable: skuloc
+
+    columns:
+      sku_id:
+        sql: "sku_id"
+        type: long
+        alias: "skuId"
+      location_number:
+        sql: "location_number"
+        type: int
+        alias: "locationNumber"
+      available_qty:
+        sql: "available_qty"
+        type: long
+        alias: "availableQty"
+      ecomm_pick_reserve:
+        sql: "ecomm_pick_reserve"
+        type: long
+        alias: "ecommPickReserve"
+      ecomm_pack_reserve:
+        sql: "ecomm_pack_reserve"
+        type: long
+        alias: "ecommPackReserve"
+      dotcom_reserve:
+        sql: "dotcom_reserve"
+        type: long
+        alias: "dotcomReserve"
+      retail_reserve:
+        sql: "retail_reserve"
+        type: long
+        alias: "retailReserve"
+      merch_reserve_qty:
+        sql: "merch_reserve_qty"
+        type: long
+        alias: "merchReserveQty"
+      financial_onhand_qty:
+        sql: "financial_onhand_qty"
+        type: long
+        alias: "financialOnhandQty"
+      updated_ts:
+        sql: "updated_ts"
+        type: timestamp
+        alias: "updatedAt"
+
+    filters:
+      divisionNumber:
+        column: "division_number"
+        type: int
+        op: "="
+      locationNumber:
+        column: "location_number"
+        type: int
+        op: "="
+      locationNumberIn:
+        column: "location_number"
+        type: "int[]"
+        op: "IN"
+        max: 5000
+      skuId:
+        column: "sku_id"
+        type: long
+        op: "="
+      skuIdIn:
+        column: "sku_id"
+        type: "long[]"
+        op: "IN"
+        max: 5000
+      channel:
+        column: "channel"
+        type: string
+        op: "="
+        allowed: ["D", "R"]
+      atsFlag:
+        column: "ats_flag"
+        type: string
+        op: "="
+        allowed: ["Y", "N"]
+      availableQtyGte:
+        column: "available_qty"
+        type: long
+        op: ">="
+      availableQtyLte:
+        column: "available_qty"
+        type: long
+        op: "<="
+      updatedAfter:
+        column: "updated_ts"
+        type: timestamp
+        op: ">="
+
+    joins:
+      location:
+        type: left
+        table: "location_master loc"
+        on: "loc.loc_number = base.location_number"
+        columns:
+          location_name:
+            sql: "loc.loc_name"
+            type: string
+            alias: "locationName"
+          location_type:
+            sql: "loc.loc_type"
+            type: string
+            alias: "locationType"
+          region_name:
+            sql: "loc.region_name"
+            type: string
+            alias: "regionName"
+
+    computed:
+      ats: "GREATEST(available_qty - (ecomm_pick_reserve + ecomm_pack_reserve), 0)"
+      totalReserve: "ecomm_pick_reserve + ecomm_pack_reserve + merch_reserve_qty"
+      dotcomAts: "GREATEST(available_qty - dotcom_reserve, 0)"
+      retailAts: "GREATEST(available_qty - retail_reserve, 0)"
+
+    pagination:
+      keysetColumns: ["sku_id", "location_number"]
+      defaultPageSize: 50
+      maxPageSize: 500
+      maxUnpaginatedRows: 10000
+      allowOffset: true
+
+    defaultSort:
+      - field: "sku_id"
+        direction: "ASC"
+      - field: "location_number"
+        direction: "ASC"
+
+    views:
+      EcommATS:
+        name: "EcommATS"
+        description: "E-commerce available to sell view"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "available_qty"
+          - "ecomm_pick_reserve"
+          - "ecomm_pack_reserve"
+        computed:
+          - "ats"
+        filters:
+          - "divisionNumber"
+          - "locationNumberIn"
+          - "skuIdIn"
+          - "channel"
+          - "atsFlag"
+          - "availableQtyGte"
+        defaultPageSize: 50
+        requiredIndexes:
+          - "CREATE INDEX ix_skuloc_sku_loc ON skuloc(sku_id, location_number)"
+          - "CREATE INDEX ix_skuloc_channel ON skuloc(channel)"
+
+      StoreBackroom:
+        name: "StoreBackroom"
+        description: "Store inventory with front/back split"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "financial_onhand_qty"
+          - "available_qty"
+        filters:
+          - "locationNumber"
+          - "skuIdIn"
+        defaultPageSize: 100
+
+      ReserveAudit:
+        name: "ReserveAudit"
+        description: "All reserve types for audit"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "ecomm_pick_reserve"
+          - "ecomm_pack_reserve"
+          - "merch_reserve_qty"
+          - "dotcom_reserve"
+          - "retail_reserve"
+        computed:
+          - "totalReserve"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "updatedAfter"
+        defaultSort:
+          - field: "updated_ts"
+            direction: "DESC"
+
+      LocationView:
+        name: "LocationView"
+        description: "SKULOC with location details"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "available_qty"
+        includes:
+          - "location"
+        filters:
+          - "locationNumberIn"
+          - "skuIdIn"
