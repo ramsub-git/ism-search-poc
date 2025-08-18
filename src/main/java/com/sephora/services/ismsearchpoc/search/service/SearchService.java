@@ -110,6 +110,13 @@ public class SearchService {
                 .view(view)
                 .viewName(viewName);
 
+        
+        if (view.isDistinct()) {
+            builder.distinct(true);
+        }
+        
+        
+        
         // Apply columns from view
         List<String> columns = resolveViewColumns(dataset, view);
         builder.columns(columns);

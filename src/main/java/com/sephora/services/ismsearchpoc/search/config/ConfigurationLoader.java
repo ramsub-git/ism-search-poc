@@ -177,11 +177,8 @@ public class ConfigurationLoader {
     /**
      * Loads configuration from multiple files in a directory.
      */
-    /**
-     * Loads configuration from multiple files in a directory.
-     */
     private SearchConfiguration loadMultiFileConfiguration() throws IOException {
-        SearchConfiguration mergedConfig = new SearchConfiguration();
+        SearchConfiguration mergedConfig = null;
         Map<DatasetKey, DatasetDefinition> allDatasets = new HashMap<>();
 
         // First, check for main config file
@@ -195,6 +192,11 @@ public class ConfigurationLoader {
                     allDatasets.putAll(mergedConfig.getDatasets());
                 }
             }
+        }
+        
+        // Initialize mergedConfig if still null (empty or comment-only YAML file)
+        if (mergedConfig == null) {
+            mergedConfig = new SearchConfiguration();
         }
 
         // Load dataset files

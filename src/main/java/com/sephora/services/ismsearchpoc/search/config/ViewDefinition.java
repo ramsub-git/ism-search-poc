@@ -85,6 +85,10 @@ public class ViewDefinition {
      * Used for documentation and validation.
      */
     private List<String> requiredIndexes;
+    
+    
+    
+    private boolean distinct = false;
 
     /**
      * Validates the view definition.

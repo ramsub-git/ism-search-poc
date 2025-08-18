@@ -67,6 +67,15 @@ datasets:
         column: "loc_country"
         type: string
         op: "="
+      regionNumber:
+        column: "region_number"
+        type: int
+        op: "="
+      regionNumberIn:
+        column: "region_number"
+        type: "int[]"
+        op: "IN"
+        max: 100
 
     pagination:
       keysetColumns: ["loc_number"]
@@ -104,3 +113,28 @@ datasets:
         filters:
           - "locationType"
         defaultPageSize: 500
+
+      RegionDropdown: 
+        name: "RegionDropdown"
+        columns:
+          - "region_number"
+          - "region_name"
+        distinct: true
+        defaultSort:
+          - field: "region_name"
+            direction: "ASC"
+        allowUnpaginated: true
+        
+      DistrictDropdown:
+        name: "DistrictDropdown"
+        columns:
+          - "district_number"
+          - "district_name"
+          - "region_number"
+        filters:
+          - "regionNumberIn"  # For cascading
+        distinct: true
+        defaultSort:
+          - field: "district_name"
+            direction: "ASC"
+

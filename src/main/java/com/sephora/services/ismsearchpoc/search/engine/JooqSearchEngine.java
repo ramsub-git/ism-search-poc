@@ -113,6 +113,12 @@ public class JooqSearchEngine implements SearchEngine {
 
         // Add order by
         addOrderBy(query, context);
+        
+        
+        if (context.isDistinct()) {
+            query.setDistinct(true);
+        }        
+        
 
         log.debug("Built query: {}", query.getSQL());
 
@@ -228,6 +234,35 @@ public class JooqSearchEngine implements SearchEngine {
     /**
      * Adds WHERE conditions to the query.
      */
+//    private void addWhereConditions(SelectQuery<?> query, SearchContext context) {
+//        Map<String, FilterDefinition> filterDefs = context.getDataset().getFilters();
+//
+//        for (Map.Entry<String, Object> entry : context.getFilters().entrySet()) {
+//            String filterName = entry.getKey();
+//            Object value = entry.getValue();
+//
+//            FilterDefinition filterDef = filterDefs.get(filterName);
+//            if (filterDef == null) {
+//                log.warn("Filter definition not found: {}", filterName);
+//                continue;
+//            }
+//
+//            Field<Object> field = DSL.field(DSL.name(filterDef.getColumn()));
+//            Condition condition = buildCondition(field, filterDef, value);
+//
+//            if (condition != null) {
+//                query.addConditions(condition);
+//            }
+//        }
+//    }
+
+    
+    /**
+     * Adds WHERE conditions to the query.
+     * 
+     * This is the UPDATED version that handles qualified column names (table.column)
+     * properly for filters that reference joined tables.
+     */
     private void addWhereConditions(SelectQuery<?> query, SearchContext context) {
         Map<String, FilterDefinition> filterDefs = context.getDataset().getFilters();
 
@@ -241,15 +276,84 @@ public class JooqSearchEngine implements SearchEngine {
                 continue;
             }
 
-            Field<Object> field = DSL.field(DSL.name(filterDef.getColumn()));
+            // Create field with proper handling for qualified names
+            Field<Object> field;
+            String columnExpression = filterDef.getColumn();
+            
+            if (columnExpression.contains(".")) {
+                // Handle qualified column names (table.column)
+                String[] parts = columnExpression.split("\\.", 2);
+                field = DSL.field(DSL.name(parts[0], parts[1]));
+            } else {
+                // Simple column name
+                field = DSL.field(DSL.name(columnExpression));
+            }
+            
             Condition condition = buildCondition(field, filterDef, value);
 
             if (condition != null) {
                 query.addConditions(condition);
             }
         }
-    }
+    }    
+    
+    
+    
+    
+    
+    /**
+     * Builds a condition for a filter.
+     */
+//    private Condition buildCondition(Field<Object> field, FilterDefinition filterDef, Object value) {
+//        if (value == null) {
+//            return field.isNull();
+//        }
+//
+//        String op = filterDef.getOp().toUpperCase();
+//
+//        switch (op) {
+//            case "=":
+//                return field.eq(value);
+//            case "!=":
+//                return field.ne(value);
+//            case ">":
+//                return field.gt(value);
+//            case ">=":
+//                return field.ge(value);
+//            case "<":
+//                return field.lt(value);
+//            case "<=":
+//                return field.le(value);
+//            case "IN":
+//                if (value instanceof Collection<?>) {
+//                    return field.in((Collection<?>) value);
+//                } else {
+//                    return field.eq(value);
+//                }
+//            case "NOT IN":
+//                if (value instanceof Collection<?>) {
+//                    return field.notIn((Collection<?>) value);
+//                } else {
+//                    return field.ne(value);
+//                }
+//            case "LIKE":
+//                return field.like(String.valueOf(value));
+//            case "BETWEEN":
+//                if (value instanceof List<?> && ((List<?>) value).size() == 2) {
+//                    List<?> range = (List<?>) value;
+//                    return field.between(range.get(0), range.get(1));
+//                }
+//                log.warn("BETWEEN requires exactly 2 values, got: {}", value);
+//                return null;
+//            default:
+//                log.warn("Unknown operator: {}", op);
+//                return field.eq(value);
+//        }
+//    }
 
+    
+    
+    
     /**
      * Builds a condition for a filter.
      */
@@ -299,7 +403,9 @@ public class JooqSearchEngine implements SearchEngine {
                 return field.eq(value);
         }
     }
-
+    
+    
+    
     /**
      * Adds ORDER BY clause to the query.
      */

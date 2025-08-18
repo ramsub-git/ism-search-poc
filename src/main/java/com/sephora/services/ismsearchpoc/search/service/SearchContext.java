@@ -70,6 +70,11 @@ public class SearchContext {
      */
     private Map<String, String> inlineComputed;
 
+    
+    private boolean distinct = false;
+    
+    
+    
     /**
      * Whether results should be paginated.
      */
