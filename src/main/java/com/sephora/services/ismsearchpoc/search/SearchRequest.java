@@ -79,6 +79,16 @@ public class SearchRequest {
     @Builder.Default
     private boolean includeTotal = false;
 
+    
+    
+    /**
+     * Whether to return distinct results.
+     * Applies to both view mode (when view has distinct: true) and ad-hoc mode.
+     */
+    @Builder.Default
+    private boolean distinct = false;    
+    
+    
     // ===== Ad-hoc Mode Fields =====
 
     /**

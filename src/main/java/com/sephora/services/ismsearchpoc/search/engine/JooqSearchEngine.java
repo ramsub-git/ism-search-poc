@@ -409,6 +409,37 @@ public class JooqSearchEngine implements SearchEngine {
     /**
      * Adds ORDER BY clause to the query.
      */
+//    private void addOrderBy(SelectQuery<?> query, SearchContext context) {
+//        List<SortSpec> sortSpecs = context.getSort();
+//
+//        // Add explicit sort fields
+//        if (sortSpecs != null) {
+//            for (SortSpec sort : sortSpecs) {
+//                Field<?> field = DSL.field(DSL.name(sort.getField()));
+//                SortField<?> sortField = "DESC".equalsIgnoreCase(sort.getNormalizedDirection())
+//                        ? field.desc()
+//                        : field.asc();
+//                query.addOrderBy(sortField);
+//            }
+//        }
+//
+//        // Add keyset columns for deterministic ordering
+//        if (context.isPaginated() && context.getPaginationMode() == PaginationMode.KEYSET) {
+//            for (String keysetCol : context.getKeysetColumns()) {
+//                // Check if already in sort
+//                boolean alreadySorted = sortSpecs != null && sortSpecs.stream()
+//                        .anyMatch(s -> s.getField().equalsIgnoreCase(keysetCol));
+//
+//                if (!alreadySorted) {
+//                    query.addOrderBy(DSL.field(DSL.name(keysetCol)).asc());
+//                }
+//            }
+//        }
+//    }
+
+    /**
+     * Adds ORDER BY clause to the query.
+     */
     private void addOrderBy(SelectQuery<?> query, SearchContext context) {
         List<SortSpec> sortSpecs = context.getSort();
 
@@ -425,18 +456,37 @@ public class JooqSearchEngine implements SearchEngine {
 
         // Add keyset columns for deterministic ordering
         if (context.isPaginated() && context.getPaginationMode() == PaginationMode.KEYSET) {
-            for (String keysetCol : context.getKeysetColumns()) {
-                // Check if already in sort
-                boolean alreadySorted = sortSpecs != null && sortSpecs.stream()
-                        .anyMatch(s -> s.getField().equalsIgnoreCase(keysetCol));
+            // For DISTINCT queries, only add keyset columns that are in the SELECT list
+            if (context.isDistinct()) {
+                for (String keysetCol : context.getKeysetColumns()) {
+                    // Check if the keyset column is already in the columns list
+                    boolean isInSelect = context.getColumns().stream()
+                            .anyMatch(col -> col.equalsIgnoreCase(keysetCol));
+                    
+                    // Check if already in sort
+                    boolean alreadySorted = sortSpecs != null && sortSpecs.stream()
+                            .anyMatch(s -> s.getField().equalsIgnoreCase(keysetCol));
 
-                if (!alreadySorted) {
-                    query.addOrderBy(DSL.field(DSL.name(keysetCol)).asc());
+                    if (isInSelect && !alreadySorted) {
+                        query.addOrderBy(DSL.field(DSL.name(keysetCol)).asc());
+                    }
+                }
+            } else {
+                // Non-distinct queries can add all keyset columns
+                for (String keysetCol : context.getKeysetColumns()) {
+                    // Check if already in sort
+                    boolean alreadySorted = sortSpecs != null && sortSpecs.stream()
+                            .anyMatch(s -> s.getField().equalsIgnoreCase(keysetCol));
+
+                    if (!alreadySorted) {
+                        query.addOrderBy(DSL.field(DSL.name(keysetCol)).asc());
+                    }
                 }
             }
         }
-    }
-
+    }    
+    
+    
     /**
      * Container for pagination state.
      */

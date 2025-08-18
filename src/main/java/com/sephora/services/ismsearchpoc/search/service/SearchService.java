@@ -143,6 +143,47 @@ public class SearchService {
         return builder.build();
     }
 
+//    /**
+//     * Processes an ad-hoc search request.
+//     *
+//     * @param dataset dataset definition
+//     * @param request search request
+//     * @return search context
+//     */
+//    private SearchContext processAdHocMode(DatasetDefinition dataset, SearchRequest request) {
+//        log.debug("Processing ad-hoc query");
+//
+//        SearchContext.SearchContextBuilder builder = SearchContext.builder()
+//                .dataset(dataset)
+//                .adhoc(true);
+//
+//        // Validate and apply columns
+//        List<String> columns = validateColumns(dataset, request.getColumns());
+//        builder.columns(columns);
+//
+//        // Validate and apply filters
+//        Map<String, Object> filters = validateFilters(dataset, request.getFilters());
+//        builder.filters(filters);
+//
+//        // Apply sort or use default
+//        List<SortSpec> sort = request.getSort();
+//        if (sort == null || sort.isEmpty()) {
+//            sort = dataset.getDefaultSort();
+//        }
+//        builder.sort(sort);
+//
+//        // Apply computed fields
+//        if (request.getComputed() != null && !request.getComputed().isEmpty()) {
+//            builder.inlineComputed(request.getComputed());
+//        }
+//
+//        // Apply pagination
+//        applyPagination(builder, dataset, null, request);
+//
+//        return builder.build();
+//    }
+    
+     
     /**
      * Processes an ad-hoc search request.
      *
@@ -156,6 +197,11 @@ public class SearchService {
         SearchContext.SearchContextBuilder builder = SearchContext.builder()
                 .dataset(dataset)
                 .adhoc(true);
+
+        // Handle distinct flag from request
+        if (request.isDistinct()) {
+            builder.distinct(true);
+        }
 
         // Validate and apply columns
         List<String> columns = validateColumns(dataset, request.getColumns());
@@ -181,7 +227,9 @@ public class SearchService {
         applyPagination(builder, dataset, null, request);
 
         return builder.build();
-    }
+    }    
+    
+    
 
     /**
      * Resolves columns for a view including computed fields.

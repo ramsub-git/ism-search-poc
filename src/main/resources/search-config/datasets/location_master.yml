@@ -18,10 +18,22 @@ datasets:
         sql: "loc_type"
         type: string
         alias: "locationType"
+      region_number:
+        sql: "region_number"
+        type: string
+        alias: "regionNumber"
       region_name:
         sql: "region_name"
         type: string
         alias: "regionName"
+      district_number:
+        sql: "district_number"
+        type: string
+        alias: "districtNumber"
+      district_name:
+        sql: "district_name"
+        type: string
+        alias: "districtName"
       loc_country:
         sql: "loc_country"
         type: string
@@ -124,17 +136,39 @@ datasets:
           - field: "region_name"
             direction: "ASC"
         allowUnpaginated: true
-        
+
       DistrictDropdown:
         name: "DistrictDropdown"
         columns:
           - "district_number"
           - "district_name"
-          - "region_number"
         filters:
-          - "regionNumberIn"  # For cascading
+          - "regionNumberIn"
         distinct: true
         defaultSort:
           - field: "district_name"
             direction: "ASC"
 
+      StoreDropdown:
+        name: "StoreDropdown"
+        columns:
+          - "loc_number"
+          - "loc_name"
+        filters:
+          - "regionNumberIn"
+          - "locationTypeIn"
+        distinct: true
+        defaultSort:
+          - field: "loc_name"
+            direction: "ASC"
+        allowUnpaginated: true
+
+      StoreTypeDropdown:
+        name: "StoreTypeDropdown"
+        columns:
+          - "loc_type"
+        distinct: true
+        defaultSort:
+          - field: "loc_type"
+            direction: "ASC"
+        allowUnpaginated: true

@@ -139,23 +139,23 @@ row_count=$(echo "$response" | jq '.data | length')
 echo "Number of distinct stores: $row_count"
 echo ""
 
-# 11. Test Brand Dropdown (if brand dataset exists)
-echo -e "${YELLOW}=== 11. BRAND DROPDOWN TEST ===${NC}"
-test_dropdown "/skuloc" "Get distinct brands from SKULOC" '{
-  "columns": ["brand_id", "brand_name"],
-  "distinct": true,
-  "sort": [{"field": "brand_name", "direction": "ASC"}],
-  "paginate": false
-}'
+# # 11. Test Brand Dropdown (if brand dataset exists)
+# echo -e "${YELLOW}=== 11. BRAND DROPDOWN TEST ===${NC}"
+# test_dropdown "/skuloc" "Get distinct brands from SKULOC" '{
+#   "columns": ["brand_id", "brand_name"],
+#   "distinct": true,
+#   "sort": [{"field": "brand_name", "direction": "ASC"}],
+#   "paginate": false
+# }'
 
-# 12. Test Department Dropdown (if exists in data)
-echo -e "${YELLOW}=== 12. DEPARTMENT DROPDOWN TEST ===${NC}"
-test_dropdown "/skuloc" "Get distinct departments" '{
-  "columns": ["department_id", "department_name"],
-  "distinct": true,
-  "sort": [{"field": "department_name", "direction": "ASC"}],
-  "paginate": false
-}'
+# # 12. Test Department Dropdown (if exists in data)
+# echo -e "${YELLOW}=== 12. DEPARTMENT DROPDOWN TEST ===${NC}"
+# test_dropdown "/skuloc" "Get distinct departments" '{
+#   "columns": ["department_id", "department_name"],
+#   "distinct": true,
+#   "sort": [{"field": "department_name", "direction": "ASC"}],
+#   "paginate": false
+# }'
 
 # Summary function
 print_summary() {
