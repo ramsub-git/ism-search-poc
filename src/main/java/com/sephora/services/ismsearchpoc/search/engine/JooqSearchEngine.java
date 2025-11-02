@@ -276,10 +276,18 @@ public class JooqSearchEngine implements SearchEngine {
                 continue;
             }
 
+            Condition condition = null;
+
+
+            // Check if this is an expression-based filter
+            if (filterDef.getExpression() != null && !filterDef.getExpression().trim().isEmpty()) {
+                log.debug("Building expression-based condition for filter: {}", filterName);
+//                condition = buildExpressionCondition(filterDef, value);
+            } else  {
             // Create field with proper handling for qualified names
             Field<Object> field;
             String columnExpression = filterDef.getColumn();
-            
+
             if (columnExpression.contains(".")) {
                 // Handle qualified column names (table.column)
                 String[] parts = columnExpression.split("\\.", 2);
@@ -288,16 +296,17 @@ public class JooqSearchEngine implements SearchEngine {
                 // Simple column name
                 field = DSL.field(DSL.name(columnExpression));
             }
-            
-            Condition condition = buildCondition(field, filterDef, value);
 
+
+            condition = buildCondition(field, filterDef, value);
+        }
             if (condition != null) {
                 query.addConditions(condition);
             }
         }
-    }    
-    
-    
+    }
+
+
     
     
     
@@ -351,8 +360,76 @@ public class JooqSearchEngine implements SearchEngine {
 //        }
 //    }
 
-    
-    
+
+    /**
+     * Builds a condition for expression-based filters.
+     *
+     * @param filterDef filter definition with expression
+     * @param value filter value from request
+     * @return SQL condition
+     */
+    private Condition buildExpressionCondition(FilterDefinition filterDef, Object value) {
+        String expression = filterDef.getExpression();
+        String op = filterDef.getOp().toUpperCase();
+
+        log.debug("Building expression condition: {} {} {}", expression, op, value);
+
+        // For simple boolean/equality checks
+        if ("=".equals(op)) {
+            if (value == null) {
+                return DSL.condition(expression + " IS NULL");
+            }
+
+            // For boolean type, treat the expression as the condition itself
+            if ("boolean".equalsIgnoreCase(filterDef.getType())) {
+                if (Boolean.TRUE.equals(value) || "1".equals(String.valueOf(value)) ||
+                        "true".equalsIgnoreCase(String.valueOf(value))) {
+                    // Return the expression as-is (it should evaluate to true)
+                    return DSL.condition(expression);
+                } else {
+                    // Negate the expression
+                    return DSL.condition("NOT (" + expression + ")");
+                }
+            }
+
+            // For numeric comparisons, wrap expression in parentheses and compare
+            return DSL.condition("(" + expression + ") = ?", value);
+        }
+
+        // For other operators, treat expression as a field
+        if ("!=".equals(op)) {
+            return DSL.condition("(" + expression + ") != ?", value);
+        }
+
+        if (">".equals(op)) {
+            return DSL.condition("(" + expression + ") > ?", value);
+        }
+
+        if (">=".equals(op)) {
+            return DSL.condition("(" + expression + ") >= ?", value);
+        }
+
+        if ("<".equals(op)) {
+            return DSL.condition("(" + expression + ") < ?", value);
+        }
+
+        if ("<=".equals(op)) {
+            return DSL.condition("(" + expression + ") <= ?", value);
+        }
+
+        if ("IN".equals(op)) {
+            if (value instanceof Collection<?>) {
+                Collection<?> values = (Collection<?>) value;
+                // Build IN clause manually
+                return DSL.condition("(" + expression + ") IN (" +
+                                values.stream().map(v -> "?").collect(Collectors.joining(",")) + ")",
+                        values.toArray());
+            }
+        }
+
+        log.warn("Unsupported operator for expression filter: {}", op);
+        return null;
+    }
     
     /**
      * Builds a condition for a filter.

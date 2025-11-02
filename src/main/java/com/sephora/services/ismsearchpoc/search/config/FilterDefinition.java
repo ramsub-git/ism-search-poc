@@ -66,15 +66,22 @@ public class FilterDefinition {
     private String description;
 
     /**
+     * Raw SQL expression for complex filter conditions.
+     * When specified, used instead of column for WHERE clause.
+     * Example: "(base.financial_onhand_qty < 0 OR base.available_qty < 0)"
+     */
+    private String expression;
+
+
+    /**
      * Validates the filter definition.
      *
      * @throws IllegalStateException if validation fails
      */
     public void validate() {
-        if (column == null || column.trim().isEmpty()) {
-            throw new IllegalStateException("Filter column cannot be null or empty");
+        if (expression == null && (column == null || column.trim().isEmpty())) {
+            throw new IllegalStateException("Filter must have either column or expression");
         }
-
         if (type == null || type.trim().isEmpty()) {
             throw new IllegalStateException("Filter type cannot be null or empty");
         }
