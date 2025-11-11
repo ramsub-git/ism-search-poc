@@ -86,7 +86,16 @@ public class ViewDefinition {
      */
     private List<String> requiredIndexes;
     
-    
+    // Added by SRS 1110
+
+    /**
+     * GROUP BY columns for aggregation queries.
+     * When specified, enables aggregation functions like SUM, COUNT, AVG, etc.
+     */
+    private List<String> groupBy;
+
+
+    // End Addition
     
     private boolean distinct = false;
 

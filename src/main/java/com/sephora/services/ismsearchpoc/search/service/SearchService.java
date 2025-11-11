@@ -125,6 +125,19 @@ public class SearchService {
         Map<String, Object> filters = validateViewFilters(dataset, view, request.getFilters());
         builder.filters(filters);
 
+
+    // Added by SRS 1110
+        // Apply GROUP BY from view
+        if (view.getGroupBy() != null && !view.getGroupBy().isEmpty()) {
+            log.debug("Applying GROUP BY from view {}: {}", viewName, view.getGroupBy());
+            builder.groupBy(view.getGroupBy());
+        } else {
+            log.debug("No GROUP BY specified in view {}", viewName);
+        }
+
+        // End addition
+
+
         // Apply sort (request overrides view default)
         List<SortSpec> sort = request.getSort() != null ? request.getSort() : view.getDefaultSort();
         if (sort == null) {

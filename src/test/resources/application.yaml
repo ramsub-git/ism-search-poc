@@ -1,0 +1,200 @@
+# ISM Search POC - Consolidated Application Configuration
+spring:
+  application:
+    name: ism-search-poc
+  
+  liquibase:
+    enabled: false
+  
+  sql:
+    init:
+      mode: never
+  
+  # Primary MySQL datasource
+  datasource:
+    url: jdbc:mysql://localhost:3306/ism_dev
+    username: ism
+    password: Ism$Dev$ApP$350
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-test-query: 'SELECT 1'
+      connection-timeout: 30000
+      maximum-pool-size: 20
+  
+  # JooQ configuration
+  jooq:
+    sql-dialect: MYSQL
+  
+  # Web configuration
+  web:
+    ignoreAutoConfiguredSkipPatterns: true
+  
+  cloud:
+    kubernetes:
+      enables: false
+      discovery:
+        enabled: false
+    httpclientfactories:
+      apache:
+        enabled: true
+  
+  main:
+    allow-bean-definition-overriding: true
+
+# Server configuration
+server:
+  port: 8080
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.sephora.services.ismsearchpoc: DEBUG
+    org.jooq.tools.LoggerListener: DEBUG
+    org.springframework: INFO
+
+# ISM Search configuration
+ism:
+  search:
+    config:
+      hot-reload: false
+      path: classpath:search-config/
+  reserve:
+    calc:
+      base:
+        url: http://ism-foundation-eus1-dev1.lower.internal.sephora.com/ism-foundation
+  supply:
+    scm:
+      scheduler:
+        cron: 0 0/5 * * * *
+  processing:
+    logging:
+      service-name: ism-supply
+      default-severity: P0
+      audit-enabled: true
+      error-logging-enabled: true
+
+# AS400 datasource configuration
+as400:
+  url: 'jdbc:as400://sdhdev1.sephoraus.com;libraries=RETFL030;naming=sql;transaction isolation=none'
+  username: INTSVC
+  password: INTSVC101
+  driver-class-name: com.ibm.as400.access.AS400JDBCDriver
+  hikari:
+    initialization-fail-timeout: -1
+    connection-test-query: 'values 1'
+    connection-timeout: 30000
+    maximum-pool-size: 20
+
+# JPA configuration for multiple datasources
+app:
+  jpa:
+    mysql:
+      database-platform: org.hibernate.dialect.MySQLDialect
+      ddl-auto: none
+      properties:
+        hibernate:
+          jdbc:
+            batch_size: 500
+    as400:
+      database-platform: org.hibernate.dialect.DB2400Dialect
+      ddl-auto: none
+      properties:
+        hibernate:
+          jdbc:
+            batch_size: 20
+
+# Kafka configuration
+kafka:
+  bootstrap: pkc-x7v5k.eastus2.azure.confluent.cloud:9092
+  saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule required username="DJ5VVSG2FTD5G56L" password="8d2XR9ElzBiVKKrPZzuTAQVvPMtAyB6oRdg8i27kwcoIB2nuAUM4NRjk/wbB1jLZ";
+  stoorder:
+    topicName: Sephora.SupplyChain.STOOrder
+    groupId: Sephora.SupplyChain.STOOrder.Consumer.Local5
+  schemaRegistry: false
+  auto-topic-creation: false
+  reconnect:
+    backoff:
+      ms: 60000
+  request:
+    timeout:
+      ms: 300000
+  session:
+    timeout:
+      ms: 600000
+  security:
+    protocol: SASL_SSL
+  thread:
+    pool.size: 15
+  schema.registry:
+    url: pkc-x7v5k.eastus2.azure.confluent.cloud:9092
+    credentials.source: USER_INFO
+    user.info: XD2DV3CKRIF5WIJC:WVinp0Td1YBSWw4OK17EulFAnfFbrb/ai80Fzs4s3MCbxNgyYV0bE4ap/DhWzVEa
+    auto.register.schemas: true
+
+# Discovery client configuration
+discovery:
+  client:
+    currentServiceId: poslog-mcs-consumer-svc
+
+# Request logging configuration
+request:
+  log:
+    jsonBodies: true
+    maxPayloadLength: 1000
+    excludeUrlPatterns: '/actuator/health,/actuator/liveness,/actuator/prometheus'
+
+# Actuator/Management configuration
+management:
+  server:
+    port: 8080
+  endpoint:
+    restart:
+      enabled: true
+  health:
+    azure-key-vault:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      app: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server:
+          requests: true
+      percentiles:
+        http.server:
+          requests: 0.5, 0.75, 0.90, 0.95, 0.99
+
+# Mock server configuration
+mock:
+  server:
+    base:
+      url: "http://commerce-mock-service-perf1.eus1-omni-perf.internalsephora.com"
+
+---
+# TEST PROFILE - Override settings for testing
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/ismdb7
+    username: ism
+    password: ismpass
+
+---
+# LOCAL PROFILE - Override settings for local development
+spring:
+  config:
+    activate:
+      on-profile: local
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/ism_dev
+    username: ism
+    password: Ism$Dev$ApP$350

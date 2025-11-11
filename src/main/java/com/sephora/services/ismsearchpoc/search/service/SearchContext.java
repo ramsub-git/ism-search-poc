@@ -70,7 +70,16 @@ public class SearchContext {
      */
     private Map<String, String> inlineComputed;
 
-    
+    // Added by SRS 1110
+
+    /**
+     * GROUP BY columns for aggregation queries.
+     */
+    private List<String> groupBy;
+
+    // End addition
+
+
     private boolean distinct = false;
     
     
@@ -139,4 +148,16 @@ public class SearchContext {
     public boolean hasFilters() {
         return filters != null && !filters.isEmpty();
     }
+
+    // Added by SRS 1110
+    /**
+     * Checks if this search has GROUP BY clauses.
+     *
+     * @return true if GROUP BY is present
+     */
+    public boolean hasGroupBy() {
+        return groupBy != null && !groupBy.isEmpty();
+    }
+    // End Addition
+
 }

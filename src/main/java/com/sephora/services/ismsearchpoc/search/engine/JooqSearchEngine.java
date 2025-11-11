@@ -94,9 +94,16 @@ public class JooqSearchEngine implements SearchEngine {
         SelectQuery<?> query = dsl.selectQuery();
         DatasetDefinition dataset = context.getDataset();
 
+        // Added by SRS 1110
         // Add base table
+        /*
         Table<?> baseTable = DSL.table(DSL.name(dataset.getBaseTable())).as("base");
         query.addFrom(baseTable);
+        */
+        // NEW CODE:
+        Table<?> baseTable = createBaseTable(dataset);
+        query.addFrom(baseTable);
+        // End addition
 
         // Add select fields
         addSelectFields(query, context);
@@ -110,6 +117,16 @@ public class JooqSearchEngine implements SearchEngine {
         if (context.hasFilters()) {
             addWhereConditions(query, context);
         }
+
+        // Added by SRS 1110
+        // Add GROUP BY if specified
+        if (context.hasGroupBy()) {
+            log.debug("Context has GROUP BY: {}", context.getGroupBy());
+            addGroupBy(query, context);
+        } else {
+            log.debug("Context does not have GROUP BY");
+        }
+        // End Addition
 
         // Add order by
         addOrderBy(query, context);
@@ -736,11 +753,19 @@ public class JooqSearchEngine implements SearchEngine {
      */
     private Long executeCountQuery(SearchContext context) {
         try {
+            // Changed by SRS 1110
+            /*
             // Build count query directly with select
             Table<?> baseTable = DSL.table(DSL.name(context.getDataset().getBaseTable())).as("base");
 
             // Start with select count(*)
             SelectJoinStep<?> selectStep = dsl.selectCount().from(baseTable);
+            */
+            Table<?> baseTable = createBaseTable(context.getDataset());
+
+            // Start with select count(*)
+            SelectJoinStep<?> selectStep = dsl.selectCount().from(baseTable);
+            // End Change
 
             // Add joins if needed
             if (context.hasJoins() && context.getDataset().getJoins() != null) {
@@ -831,4 +856,90 @@ public class JooqSearchEngine implements SearchEngine {
         meta.put("engine", "jooq");
         return meta;
     }
+
+
+    // Added by SRS 1110
+    /**
+     * Adds GROUP BY clauses to the query.
+     */
+    private void addGroupBy(SelectQuery<?> query, SearchContext context) {
+        if (context.getGroupBy() == null || context.getGroupBy().isEmpty()) {
+            log.debug("No GROUP BY columns specified");
+            return;
+        }
+
+        log.debug("Adding GROUP BY for columns: {}", context.getGroupBy());
+        DatasetDefinition dataset = context.getDataset();
+
+        for (String groupByColumn : context.getGroupBy()) {
+            Field<?> field = null;
+
+            // Check if it's a computed field
+            if (dataset.getComputed() != null && dataset.getComputed().containsKey(groupByColumn)) {
+                // Use computed field expression
+                String expression = dataset.getComputed().get(groupByColumn);
+                field = DSL.field(expression);
+                log.debug("GROUP BY computed field {} -> {}", groupByColumn, expression);
+            } else {
+                // Regular column
+                ColumnDefinition colDef = dataset.getColumns().get(groupByColumn);
+                if (colDef != null) {
+                    if (colDef.getSql().contains(".")) {
+                        // Handle qualified column names (table.column)
+                        String[] parts = colDef.getSql().split("\\.", 2);
+                        field = DSL.field(DSL.name(parts[0], parts[1]));
+                    } else {
+                        field = DSL.field(DSL.name(colDef.getSql()));
+                    }
+                    log.debug("GROUP BY regular column {} -> {}", groupByColumn, colDef.getSql());
+                } else {
+                    // Check join columns
+                    field = findJoinColumn(context, groupByColumn);
+                    if (field != null) {
+                        log.debug("GROUP BY join column {} found", groupByColumn);
+                    } else {
+                        log.warn("GROUP BY column not found: {}", groupByColumn);
+                    }
+                }
+            }
+
+            if (field != null) {
+                query.addGroupBy(field);
+                log.debug("Added GROUP BY: {}", groupByColumn);
+            } else {
+                log.warn("GROUP BY column not found: {}", groupByColumn);
+            }
+        }
+    }
+    // End Addition
+
+    // Added SRS 1110
+    /**
+     * Creates the base table, supporting both simple table names and UNION queries.
+     */
+    private Table<?> createBaseTable(DatasetDefinition dataset) {
+        String baseTableName = dataset.getBaseTable();
+
+        // Check if this is a UNION query (contains UNION ALL)
+        if (isUnionQuery(baseTableName)) {
+            log.debug("Detected UNION query in baseTable: {}", baseTableName);
+            return DSL.table(DSL.sql("(" + baseTableName + ")")).as("base");
+        } else {
+            // Regular table name
+            return DSL.table(DSL.name(baseTableName)).as("base");
+        }
+    }
+
+    /**
+     * Checks if the baseTable string contains a UNION query.
+     */
+    private boolean isUnionQuery(String baseTable) {
+        if (baseTable == null) {
+            return false;
+        }
+
+        String upperCase = baseTable.toUpperCase().trim();
+        return upperCase.contains("UNION ALL") || upperCase.contains("UNION");
+    }
+    // End Addition
 }
