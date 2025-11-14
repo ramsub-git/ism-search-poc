@@ -1,0 +1,275 @@
+# Reserve Calc Result Dataset Configuration
+# Reserve header records for inventory management
+
+datasets:
+  RESERVE_CALC_RESULT:
+    baseTable: reserve_calc_result
+
+    columns:
+      sku_id:
+        sql: "sku_id"
+        type: long
+        alias: "skuId"
+      location_number:
+        sql: "location_number"
+        type: int
+        alias: "locationNumber"
+      division:
+        sql: "division"
+        type: string
+        alias: "division"
+      call_for:
+        sql: "call_for"
+        type: string
+        alias: "callFor"
+
+      on_hand:
+        sql: "on_hand"
+        type: long
+        alias: "onHand"
+      rohm:
+        sql: "rohm"
+        type: long
+        alias: "rohm"
+      lost:
+        sql: "lost"
+        type: long
+        alias: "lost"
+      oob_adjustment:
+        sql: "oob_adjustment"
+        type: long
+        alias: "oobAdjustment"
+      snb:
+        sql: "snb"
+        type: long
+        alias: "snb"
+      dtco:
+        sql: "dtco"
+        type: long
+        alias: "dtco"
+      rohp:
+        sql: "rohp"
+        type: long
+        alias: "rohp"
+      dot_hard_reserve_ats_yes:
+        sql: "dot_hard_reserve_ats_yes"
+        type: long
+        alias: "dotHardReserveAtsYes"
+      dot_hard_reserve_ats_no:
+        sql: "dot_hard_reserve_ats_no"
+        type: long
+        alias: "dotHardReserveAtsNo"
+      ret_hard_reserve_ats_yes:
+        sql: "ret_hard_reserve_ats_yes"
+        type: long
+        alias: "retHardReserveAtsYes"
+      ret_hard_reserve_ats_no:
+        sql: "ret_hard_reserve_ats_no"
+        type: long
+        alias: "retHardReserveAtsNo"
+      held_hard_reserve:
+        sql: "held_hard_reserve"
+        type: long
+        alias: "heldHardReserve"
+      dot_reserve:
+        sql: "dot_reserve"
+        type: long
+        alias: "dotReserve"
+      ret_reserve:
+        sql: "ret_reserve"
+        type: long
+        alias: "retReserve"
+      dot_outbound:
+        sql: "dot_outbound"
+        type: long
+        alias: "dotOutbound"
+      need:
+        sql: "need"
+        type: long
+        alias: "need"
+      buyer_class:
+        sql: "buyer_class"
+        type: string
+        alias: "buyerClass"
+      init_afs:
+        sql: "init_afs"
+        type: long
+        alias: "initAfs"
+      uncom_afs:
+        sql: "uncom_afs"
+        type: long
+        alias: "uncomAfs"
+      dot_ats:
+        sql: "dot_ats"
+        type: long
+        alias: "dotAts"
+      retail_ats:
+        sql: "retail_ats"
+        type: long
+        alias: "retailAts"
+      uncommitted:
+        sql: "uncommitted"
+        type: long
+        alias: "uncommitted"
+      committed:
+        sql: "committed"
+        type: long
+        alias: "committed"
+      uncomm_hr:
+        sql: "uncomm_hr"
+        type: long
+        alias: "uncommHr"
+      oms_supply:
+        sql: "oms_supply"
+        type: long
+        alias: "omsSupply"
+      ret_final:
+        sql: "ret_final"
+        type: long
+        alias: "retFinal"
+      oms_final:
+        sql: "oms_final"
+        type: long
+        alias: "omsFinal"
+      snb_actual:
+        sql: "snb_actual"
+        type: long
+        alias: "snbActual"
+      dtco_actual:
+        sql: "dtco_actual"
+        type: long
+        alias: "dtcoActual"
+      rohp_actual:
+        sql: "rohp_actual"
+        type: long
+        alias: "rohpActual"
+      dot_hry_actual:
+        sql: "dot_hry_actual"
+        type: long
+        alias: "dotHryActual"
+      dot_hrn_actual:
+        sql: "dot_hrn_actual"
+        type: long
+        alias: "dotHrnActual"
+      ret_hry_actual:
+        sql: "ret_hry_actual"
+        type: long
+        alias: "retHryActual"
+      ret_hrn_actual:
+        sql: "ret_hrn_actual"
+        type: long
+        alias: "retHrnActual"
+      hldhr_actual:
+        sql: "hldhr_actual"
+        type: long
+        alias: "hldhrActual"
+      dot_rsv_actual:
+        sql: "dot_rsv_actual"
+        type: long
+        alias: "dotRsvActual"
+      ret_rsv_actual:
+        sql: "ret_rsv_actual"
+        type: long
+        alias: "retRsvActual"
+      aoutbv_actual:
+        sql: "aoutbv_actual"
+        type: long
+        alias: "aoutbvActual"
+      need_actual:
+        sql: "need_actual"
+        type: long
+        alias: "needActual"
+      error_message:
+        sql: "error_message"
+        type: string
+        alias: "errorMessage"
+      created_at:
+        sql: "created_at"
+        type: datetime
+        alias: "createdAt"
+
+    filters:
+      skuId:
+        column: "sku_id"
+        type: long
+        op: "="
+      locationNumber:
+        column: "location_number"
+        type: long
+        op: "="
+      divisionEqual:
+        column: "division"
+        type: string
+        op: "="
+      callFor:
+        column: "call_for"
+        type: string
+        op: "="
+
+    pagination:
+      keysetColumns: [ "sku_id", "location_number" ]
+      defaultPageSize: 50
+      maxPageSize: 500
+      maxUnpaginatedRows: 10000
+      allowOffset: true
+
+    defaultSort:
+      - field: "sku_id"
+        direction: "ASC"
+      - field: "location_number"
+        direction: "ASC"
+
+    views:
+      ReserveCalcResult:
+        name: "ReserveCalcResult"
+        description: "ReserveCalcResult"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "division"
+          - "call_for"
+          - "on_hand"
+          - "rohm"
+          - "lost"
+          - "oob_adjustment"
+          - "snb"
+          - "dtco"
+          - "rohp"
+          - "dot_hard_reserve_ats_yes"
+          - "dot_hard_reserve_ats_no"
+          - "ret_hard_reserve_ats_yes"
+          - "ret_hard_reserve_ats_no"
+          - "held_hard_reserve"
+          - "dot_reserve"
+          - "ret_reserve"
+          - "dot_outbound"
+          - "need"
+          - "buyer_class"
+          - "init_afs"
+          - "uncom_afs"
+          - "dot_ats"
+          - "retail_ats"
+          - "uncommitted"
+          - "committed"
+          - "uncomm_hr"
+          - "oms_supply"
+          - "ret_final"
+          - "oms_final"
+          - "snb_actual"
+          - "dtco_actual"
+          - "rohp_actual"
+          - "dot_hry_actual"
+          - "dot_hrn_actual"
+          - "ret_hry_actual"
+          - "ret_hrn_actual"
+          - "hldhr_actual"
+          - "dot_rsv_actual"
+          - "ret_rsv_actual"
+          - "aoutbv_actual"
+          - "need_actual"
+          - "created_at"
+        filters:
+          - "skuId"
+          - "locationNumber"
+
+        defaultPageSize: 100

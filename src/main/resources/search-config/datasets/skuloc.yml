@@ -7,128 +7,330 @@ datasets:
 
     columns:
       sku_id:
-        sql: "sku_id"
-        type: long
+        sql: "base.sku_id"
+        type: "long"
         alias: "skuId"
       location_number:
-        sql: "location_number"
-        type: int
+        sql: "base.location_number"
+        type: "int"
         alias: "locationNumber"
       available_qty:
-        sql: "available_qty"
-        type: long
+        sql: "base.available_qty"
+        type: "long"
         alias: "availableQty"
       ecomm_pick_reserve:
-        sql: "ecomm_pick_reserve"
-        type: long
+        sql: "base.ecomm_pick_reserve"
+        type: "long"
         alias: "ecommPickReserve"
       ecomm_pack_reserve:
-        sql: "ecomm_pack_reserve"
-        type: long
+        sql: "base.ecomm_pack_reserve"
+        type: "long"
         alias: "ecommPackReserve"
       dotcom_reserve:
-        sql: "dotcom_reserve"
-        type: long
+        sql: "base.dotcom_reserve"
+        type: "long"
         alias: "dotcomReserve"
       retail_reserve:
-        sql: "retail_reserve"
-        type: long
+        sql: "base.retail_reserve"
+        type: "long"
         alias: "retailReserve"
       merch_reserve_qty:
-        sql: "merch_reserve_qty"
-        type: long
+        sql: "base.merch_reserve_qty"
+        type: "long"
         alias: "merchReserveQty"
       financial_onhand_qty:
-        sql: "financial_onhand_qty"
-        type: long
+        sql: "base.financial_onhand_qty"
+        type: "long"
         alias: "financialOnhandQty"
+      totalInTransit:
+        sql: "base.total_in_transit"
+        type: "long"
+        alias: "totalInTransit"
+      lostFoundQty:
+        sql: "base.lost_found_qty"
+        type: "long"
+        alias: "lostFoundQty"
       updated_ts:
-        sql: "updated_ts"
-        type: timestamp
+        sql: "base.updated_ts"
+        type: "timestamp"
         alias: "updatedAt"
+      alternate_currency:
+        sql: "base.alternate_currency"
+        type: "string"
+        alias: "alternateCurrency"
+
+      base_currency:
+        sql: "base.base_currency"
+        type: "string"
+        alias: "baseCurrency"
+
+      extended_inventory_cost_in_group_currency:
+        sql: "base.extended_inventory_cost_in_group_currency"
+        type: "bigdecimal"
+        alias: "extendedInventoryCostInGroupCurrency"
+
+      extended_inventory_cost_in_local_currency:
+        sql: "base.extended_inventory_cost_in_local_currency"
+        type: "bigdecimal"
+        alias: "extendedInventoryCostInLocalCurrency"
+
+      group_currency_code:
+        sql: "base.group_currency_code"
+        type: "string"
+        alias: "groupCurrencyCode"
+
+      is_comingle:
+        sql: "base.is_comingle"
+        type: "byte"
+        alias: "isComingle"
+
+      local_currency_code:
+        sql: "base.local_currency_code"
+        type: "string"
+        alias: "localCurrencyCode"
+
+      oob_qty:
+        sql: "base.oob_qty"
+        type: "long"
+        alias: "oobQty"
+
+      pick_reserve_qty:
+        sql: "base.pick_reserve_qty"
+        type: "long"
+        alias: "pickReserveQty"
+
+      snb_qty:
+        sql: "base.snb_qty"
+        type: "long"
+        alias: "snbQty"
+
+      wac_in_alternate:
+        sql: "base.wac_in_alternate"
+        type: "bigdecimal"
+        alias: "wacInAlternate"
+
+      wac_in_base:
+        sql: "base.wac_in_base"
+        type: "bigdecimal"
+        alias: "wacInBase"
+
+      buyer_class:
+        sql: "base.buyer_class"
+        type: "string"
+        alias: "buyerClass"
+
+      eligibility_status:
+        sql: "base.eligibility_status"
+        type: "string"
+        alias: "eligibilityStatus"
+
+      in_store_start_date:
+        sql: "base.in_store_start_date"
+        type: "date"
+        alias: "inStoreStartDate"
+
+      in_store_end_date:
+        sql: "base.in_store_end_date"
+        type: "date"
+        alias: "inStoreEndDate"
+
+      transaction_identifier:
+        sql: "base.transaction_identifier"
+        type: "string"
+        alias: "transactionIdentifier"
+
+      frame_dotcom_need_qty:
+        sql: "base.frame_dotcom_need_qty"
+        type: "long"
+        alias: "frameDotcomNeedQty"
+
+      frame_retail_need_qty:
+        sql: "base.frame_retail_need_qty"
+        type: "long"
+        alias: "frameRetailNeedQty"
+
+      dotoutb_retneed_refresh_date:
+        sql: "base.dotoutb_retneed_refresh_date"
+        type: "timestamp"
+        alias: "dotoutbRetneedRefreshDate"
+
+      frame_dotcom_velocity:
+        sql: "base.frame_dotcom_velocity"
+        type: "bigdecimal"
+        alias: "frameDotcomVelocity"
+
+      frame_retail_velocity:
+        sql: "base.frame_retail_velocity"
+        type: "bigdecimal"
+        alias: "frameRetailVelocity"
+
+      frame_publish_ts:
+        sql: "base.frame_publish_ts"
+        type: "timestamp"
+        alias: "framePublishTs"
+
+      dotcom_hard_reserve_ats_yes:
+        sql: "base.dotcom_hard_reserve_ats_yes"
+        type: "long"
+        alias: "dotcomHardReserveAtsYes"
+
+      dotcom_hard_reserve_ats_no:
+        sql: "base.dotcom_hard_reserve_ats_no"
+        type: "long"
+        alias: "dotcomHardReserveAtsNo"
+
+      retail_hard_reserve_ats_yes:
+        sql: "base.retail_hard_reserve_ats_yes"
+        type: "long"
+        alias: "retailHardReserveAtsYes"
+
+      retail_hard_reserve_ats_no:
+        sql: "base.retail_hard_reserve_ats_no"
+        type: "long"
+        alias: "retailHardReserveAtsNo"
+
+      return_qty:
+        sql: "t.return_qty"
+        type: "long"
+        alias: "return_qty"
+
+      held_hard_reserve:
+        sql: "base.held_hard_reserve"
+        type: "long"
+        alias: "heldHardReserve"
+
+    computed:
+      ats: "GREATEST(base.available_qty - (base.ecomm_pick_reserve + base.ecomm_pack_reserve), 0)"
+      totalReserve: "base.ecomm_pick_reserve + base.ecomm_pack_reserve + base.merch_reserve_qty"
+      dotcomAts: "GREATEST(base.available_qty - base.dotcom_reserve, 0)"
+      retailAts: "GREATEST(base.available_qty - base.retail_reserve, 0)"
+      is_negative_afs: "CASE WHEN base.financial_onhand_qty < 0 OR base.available_qty < 0 THEN 1 ELSE 0 END"
+      afs_units: "base.available_qty - base.ecomm_pack_reserve - base.snb_qty"
+      total_sales_units: "SUM(t.sales_qty)"
+      return_qty: "SUM(t.return_qty)"
+      afs_positive: "CASE WHEN (base.available_qty - base.ecomm_pack_reserve - base.snb_qty) > 0 THEN 1 ELSE 0 END"
+      totalInTransitNonNull: "COALESCE(base.total_in_transit, 0)"
 
     filters:
       divisionNumber:
-        column: "division_number"
-        type: int
+        column: "base.division_number"
+        type: "int"
         op: "="
       locationNumber:
-        column: "location_number"
-        type: int
+        column: "base.location_number"
+        type: "int"
         op: "="
       locationNumberIn:
-        column: "location_number"
+        column: "base.location_number"
         type: "int[]"
         op: "IN"
         max: 5000
       skuId:
-        column: "sku_id"
-        type: long
+        column: "base.sku_id"
+        type: "long"
         op: "="
       skuIdIn:
-        column: "sku_id"
+        column: "base.sku_id"
         type: "long[]"
         op: "IN"
         max: 5000
       channel:
-        column: "channel"
-        type: string
+        column: "base.channel"
+        type: "string"
         op: "="
         allowed: ["D", "R"]
       atsFlag:
-        column: "ats_flag"
-        type: string
+        column: "base.ats_flag"
+        type: "string"
         op: "="
         allowed: ["Y", "N"]
       availableQtyGte:
-        column: "available_qty"
-        type: long
+        column: "base.available_qty"
+        type: "long"
         op: ">="
       availableQtyLte:
-        column: "available_qty"
-        type: long
+        column: "base.available_qty"
+        type: "long"
         op: "<="
       updatedAfter:
-        column: "updated_ts"
-        type: timestamp
+        column: "base.updated_ts"
+        type: "timestamp"
         op: ">="
+      negative_afs:
+        column: "(base.financial_onhand_qty < 0 OR base.available_qty < 0)"
+        type: "boolean"
+        op: "="
+        allowed: [ true ]
+      positive_afs:
+        column: "base.available_qty"
+        type: "long"
+        op: ">"
+        allowed: [ "0" ]
+      lost_found:
+        column: "base.lost_found_qty"
+        type: "long"
+        op: "!="
+        allowed: [ "0" ]
+      fromDate:
+        column: "t.business_date"
+        type: "date"
+        op: ">="
+      toDate:
+        column: "t.business_date"
+        type: "date"
+        op: "<="
+      regionName:
+        column: "loc.region_name"
+        type: "string"
+        op: "="
+      locationName:
+        column: "loc.loc_name"
+        type: "string"
+        op: "="
+      districtName:
+        column: "loc.district_name"
+        type: "string"
+        op: "="
 
     joins:
       location:
-        type: left
+        type: "left"
         table: "location_master loc"
         on: "loc.loc_number = base.location_number"
         columns:
           location_name:
             sql: "loc.loc_name"
-            type: string
+            type: "string"
             alias: "locationName"
           location_type:
             sql: "loc.loc_type"
-            type: string
+            type: "string"
             alias: "locationType"
           region_name:
             sql: "loc.region_name"
-            type: string
+            type: "string"
             alias: "regionName"
+          loc_territory:
+            sql: "loc_territory"
+            type: string
+            alias: "locationTerritory"
+      tlog:
+        type: "left"
+        table: "tlog t"
+        on: "t.sku_id = base.sku_id AND t.location_code = base.location_number"
 
-    computed:
-      ats: "GREATEST(available_qty - (ecomm_pick_reserve + ecomm_pack_reserve), 0)"
-      totalReserve: "ecomm_pick_reserve + ecomm_pack_reserve + merch_reserve_qty"
-      dotcomAts: "GREATEST(available_qty - dotcom_reserve, 0)"
-      retailAts: "GREATEST(available_qty - retail_reserve, 0)"
 
     pagination:
-      keysetColumns: ["sku_id", "location_number"]
+      keysetColumns: ["skuId", "locationNumber"]
       defaultPageSize: 50
       maxPageSize: 500
       maxUnpaginatedRows: 10000
       allowOffset: true
 
     defaultSort:
-      - field: "sku_id"
+      - field: "skuId"
         direction: "ASC"
-      - field: "location_number"
+      - field: "locationNumber"
         direction: "ASC"
 
     views:
@@ -201,3 +403,118 @@ datasets:
         filters:
           - "locationNumberIn"
           - "skuIdIn"
+
+      NegativeAFS:
+        name: "NegativeAFS"
+        description: "Negative AFS"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "financial_onhand_qty"
+          - "lostFoundQty"
+          - "available_qty"
+          - "totalInTransit"
+          - "eligibility_status"
+        filters:
+          - "locationNumber"
+          - "negative_afs"
+        defaultPageSize: 100
+
+      SkulocView:
+        name: "SkulocView"
+        description: "SKULOC with location details"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "alternate_currency"
+          - "available_qty"
+          - "base_currency"
+          - "ecomm_pack_reserve"
+          - "ecomm_pick_reserve"
+          - "extended_inventory_cost_in_group_currency"
+          - "extended_inventory_cost_in_local_currency"
+          - "financial_onhand_qty"
+          - "group_currency_code"
+          - "is_comingle"
+          - "local_currency_code"
+          - "lostFoundQty"
+          - "merch_reserve_qty"
+          - "oob_qty"
+          - "pick_reserve_qty"
+          - "snb_qty"
+          - "totalInTransit"
+          - "wac_in_alternate"
+          - "wac_in_base"
+          - "buyer_class"
+          - "eligibility_status"
+          - "in_store_start_date"
+          - "in_store_end_date"
+          - "updated_ts"
+          - "transaction_identifier"
+          - "frame_dotcom_need_qty"
+          - "frame_retail_need_qty"
+          - "dotoutb_retneed_refresh_date"
+          - "frame_dotcom_velocity"
+          - "frame_retail_velocity"
+          - "frame_publish_ts"
+          - "dotcom_hard_reserve_ats_yes"
+          - "dotcom_hard_reserve_ats_no"
+          - "retail_hard_reserve_ats_yes"
+          - "retail_hard_reserve_ats_no"
+          - "held_hard_reserve"
+          - "dotcom_reserve"
+          - "retail_reserve"
+        includes:
+          - "location"
+        filters:
+          - "locationNumberIn"
+          - "skuIdIn"
+          - "skuId"
+          - "locationNumber"
+          - "lost_found"
+
+      ReplenishmentByRegionStore:
+        name: "ReplenishmentByRegionStore"
+        description: "AFS, Sales, Refund, and Transit units filtered by Region/Store"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "totalInTransit"
+          - "afs_units"
+          - "total_sales_units"
+          - "return_qty"
+          - "totalInTransitNonNull"
+        computed:
+          - "afs_units"
+          - "totalInTransitNonNull"
+        includes:
+          - "location"
+          - "tlog"
+        filters:
+          - "skuIdIn"
+          - "regionName"
+          - "locationName"
+          - "fromDate"
+          - "toDate"
+          - "districtName"
+          - "positive_afs"
+          - "locationNumber"
+        groupBy:
+          - "sku_id"
+          - "location_number"
+
+      ReserveView:
+        name: "ReserveView"
+        description: "SKULOC with both reserve types"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "dotcom_reserve"
+          - "retail_reserve"
+          - "updated_ts"
+        filters:
+          - "locationNumberIn"
+          - "skuIdIn"
+        includes:
+          - "location"
+        defaultPageSize: 100

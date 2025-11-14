@@ -6,84 +6,109 @@ datasets:
     baseTable: rsvehr
 
     columns:
-      id:
-        sql: "id"
-        type: long
       sku_id:
-        sql: "sku_id"
+        sql: "base.sku_id"
         type: long
         alias: "skuId"
       location_number:
-        sql: "location_number"
+        sql: "base.location_number"
         type: int
         alias: "locationNumber"
+#      channel_name:
+#        sql: "base.channel_name"
+#        type: string
+      ats_flag:
+        sql: "base.ats_flag"
+        type: string
+        alias: "atsFlag"
+      hard_type:
+        sql: "base.hard_type"
+        type: string
+        alias: "hardType"
+      reservation_qty:
+        sql: "base.reservation_qty"
+        type: long
+        alias: "reservationQty"
+
       channel:
         sql: "channel"
         type: string
-      ats_flag:
-        sql: "ats_flag"
-        type: string
-        alias: "atsFlag"
-      reservation_type:
-        sql: "reservation_type"
-        type: string
-        alias: "reservationType"
-      hard_reservation_qty:
-        sql: "hard_reservation_qty"
-        type: long
-        alias: "reservationQty"
+
       reservation_status:
-        sql: "reservation_status"
+        sql: "base.reservation_status"
         type: string
         alias: "reservationStatus"
       reservation_program:
-        sql: "reservation_program"
+        sql: "base.reservation_program"
         type: string
         alias: "reservationProgram"
-      hard_reservation_start_ts:
-        sql: "hard_reservation_start_ts"
+      reservation_start_ts:
+        sql: "base.reservation_start_ts"
         type: timestamp
         alias: "startTime"
       hard_reservation_end_ts:
-        sql: "hard_reservation_end_ts"
+        sql: "base.reservation_end_ts"
         type: timestamp
         alias: "endTime"
       reservation_last_modified_ts:
-        sql: "reservation_last_modified_ts"
+        sql: "base.reservation_last_modified_ts"
         type: timestamp
         alias: "lastModified"
 
     filters:
       skuIdIn:
-        column: "sku_id"
+        column: "base.sku_id"
         type: "long[]"
         op: "IN"
         max: 5000
       locationNumberIn:
-        column: "location_number"
+        column: "base.location_number"
         type: "int[]"
         op: "IN"
         max: 1000
+#      channelNameIn:
+#        column: "base.channel_name"
+#        type: string
+#        op: "IN"
+#        allowed: ["D", "R","H"]
+      atsFlagIn:
+        column: "base.ats_flag"
+        type: string
+        op: "IN"
+        allowed: [ "Y", "N","E"]
+      hardTypeIn:
+        column: "base.hard_type"
+        type: string
+        op: "IN"
+        allowed: [ "Y", "N"
+        ]
+      reservationStatusIn:
+        column: "base.reservation_status"
+        type: string
+        op: "IN"
+        allowed: ["A", "P", "T","D"]
+
       channel:
         column: "channel"
         type: string
         op: "="
-        allowed: ["D", "R"]
+        allowed: [ "D", "R" ]
+
       reservationStatus:
-        column: "reservation_status"
+        column: "base.reservation_status"
         type: string
         op: "="
-        allowed: ["A", "E", "C"]
+        allowed: [ "A", "P", "T","D" ]
       reservationProgram:
-        column: "reservation_program"
+        column: "base.reservation_program"
         type: string
         op: "="
       startAfter:
-        column: "hard_reservation_start_ts"
+        column: "base.reservation_start_ts"
         type: timestamp
         op: ">="
       endBefore:
-        column: "hard_reservation_end_ts"
+        column: "base.reservation_end_ts"
         type: timestamp
         op: "<="
       # New filter for location type via join
@@ -92,6 +117,20 @@ datasets:
         type: "string[]"
         op: "IN"
         allowed: ["STORE", "DC", "VENDOR", "INTRANSIT"]
+      locationTerritory:
+        column: "loc.loc_territory"
+        type: "string"
+        op: "="
+      locationName:
+        column: "loc.loc_name"
+        type: string
+        op: "="
+
+      derivedReserveType:
+        column: "derivedReserveType"
+        type: string
+        op: "="
+        allowed: [ "DOTHRY", "DOTRSV", "RETHRY", "RETRSV" ]
 
     # Join to location_master for filtering by location attributes
     joins:
@@ -112,17 +151,19 @@ datasets:
             sql: "loc.region_name"
             type: string
             alias: "regionName"
+          loc_territory:
+            sql: "loc.loc_territory"
+            type: string
+            alias: "locTerritory"
 
     pagination:
-      keysetColumns: ["id"]
+      keysetColumns: ["sku_id"]
       defaultPageSize: 100
       maxPageSize: 500
       maxUnpaginatedRows: 10000
 
     defaultSort:
-      - field: "reservation_last_modified_ts"
-        direction: "DESC"
-      - field: "id"
+      - field: "lastModified"
         direction: "DESC"
 
     views:
@@ -132,16 +173,18 @@ datasets:
         columns:
           - "sku_id"
           - "location_number"
-          - "channel"
-          - "reservation_type"
-          - "hard_reservation_qty"
-          - "hard_reservation_start_ts"
-          - "hard_reservation_end_ts"
+          - "reservation_qty"
+          - "reservation_start_ts"
+          - "reservation_end_ts"
         filters:
           - "skuIdIn"
           - "locationNumberIn"
           - "channel"
           - "reservationStatus"
+          - "locationTypeIn"
+          - "locationTerritory"
+        includes:
+          - "location"
         defaultPageSize: 100
 
       ReserveHistory:
@@ -153,13 +196,17 @@ datasets:
           - "location_number"
           - "reservation_status"
           - "reservation_program"
-          - "hard_reservation_qty"
+          - "reservation_qty"
           - "reservation_last_modified_ts"
         filters:
           - "skuIdIn"
           - "locationNumberIn"
           - "startAfter"
           - "endBefore"
+          - "locationTypeIn"
+          - "locationTerritory"
+        includes:
+          - "location"
         defaultSort:
           - field: "reservation_last_modified_ts"
             direction: "DESC"
@@ -171,14 +218,25 @@ datasets:
         columns:
           - "sku_id"
           - "location_number"
-          - "channel"
-          - "reservation_type"
-          - "hard_reservation_qty"
+#          - "channel_name"
+          - "reservation_qty"
           - "reservation_status"
-        includes:
-          - "location"
+          - "reservation_start_ts"
+          - "hard_reservation_end_ts"
+          - "reservation_last_modified_ts"
+          - "ats_flag"
+          - "hard_type"
         filters:
           - "skuIdIn"
-          - "locationTypeIn"
-          - "reservationStatus"
+          - "reservationStatusIn"
+#          - "channelNameIn"
+          - "atsFlagIn"
+          - "hardTypeIn"
+          - "locationTerritory"
+          - "locationName"
+          - "locationNumberIn"
+        includes:
+          - "location"
         defaultPageSize: 100
+
+# Enhanced rsvehr.yml with derived reserve types

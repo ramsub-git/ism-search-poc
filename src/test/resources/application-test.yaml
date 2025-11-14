@@ -1,34 +1,36 @@
-# ISM Search POC - Consolidated Application Configuration
+# ISM Search POC - Test Configuration
+# This file should be placed in: src/test/resources/application.yaml
+
 spring:
   application:
     name: ism-search-poc
-  
+
   liquibase:
     enabled: false
-  
+
   sql:
     init:
       mode: never
-  
+
   # Primary MySQL datasource
   datasource:
-    url: jdbc:mysql://localhost:3306/ism_dev
+    url: jdbc:mysql://127.0.0.1:3306/ismdb7
     username: ism
-    password: Ism$Dev$ApP$350
+    password: ismpass
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-test-query: 'SELECT 1'
       connection-timeout: 30000
       maximum-pool-size: 20
-  
+
   # JooQ configuration
   jooq:
     sql-dialect: MYSQL
-  
+
   # Web configuration
   web:
     ignoreAutoConfiguredSkipPatterns: true
-  
+
   cloud:
     kubernetes:
       enables: false
@@ -37,7 +39,7 @@ spring:
     httpclientfactories:
       apache:
         enabled: true
-  
+
   main:
     allow-bean-definition-overriding: true
 
@@ -176,16 +178,12 @@ mock:
       url: "http://commerce-mock-service-perf1.eus1-omni-perf.internalsephora.com"
 
 ---
-# TEST PROFILE - Override settings for testing
+# TEST PROFILE - No overrides needed, tests use same DB as base config
+# Tests annotated with @ActiveProfiles("test") will use the datasource above
 spring:
   config:
     activate:
       on-profile: test
-  
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3306/ismdb7
-    username: ism
-    password: ismpass
 
 ---
 # LOCAL PROFILE - Override settings for local development
@@ -193,8 +191,8 @@ spring:
   config:
     activate:
       on-profile: local
-  
+
   datasource:
-    url: jdbc:mysql://localhost:3306/ism_dev
+    url: jdbc:mysql://127.0.0.1:3306/ismdb7
     username: ism
-    password: Ism$Dev$ApP$350
+    password: ismpass

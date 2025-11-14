@@ -1,0 +1,274 @@
+# Reserve Maintenance Dataset Configuration
+# Enhanced search engine with UNION support
+
+datasets:
+  RESERVE_MAINTENANCE:
+    # Use UNION query as base table - the enhanced search engine will handle this
+    baseTable: |
+      -- Hard Reserves from RSVEHR table
+      SELECT
+      r.sku_id,
+      r.location_number,
+      r.channel_name as channel,
+      r.ats_flag,
+      'Y' as hard_type,
+      r.reservation_qty,
+      r.reservation_status,
+      r.reservation_program,
+      r.reservation_start_ts,
+      r.reservation_end_ts,
+      r.reservation_last_modified_ts,
+      NULL as dotcom_reserve,
+      NULL as retail_reserve,
+      NULL as updated_ts,
+      loc.loc_territory
+      FROM rsvehr r, location_master loc
+      WHERE loc.loc_number = r.location_number
+      UNION ALL
+      
+      -- Soft Reserves from SKULOC table - Dotcom Channel
+      SELECT * FROM ( SELECT
+      s.sku_id,
+      s.location_number,
+      'D' as channel,
+      'N' as ats_flag,
+      'N' as hard_type,
+      s.dotcom_reserve as reservation_qty,
+      'A' as reservation_status,
+      'SKULOC' as reservation_program,
+      NULL as reservation_start_ts,
+      NULL as reservation_end_ts,
+      s.updated_ts as reservation_last_modified_ts,
+      s.dotcom_reserve,
+      s.retail_reserve,
+      s.updated_ts,
+      loc.loc_territory
+      
+      FROM skuloc s, location_master loc where s.location_number = loc.loc_number) as dotReserve
+      
+      UNION ALL
+      
+      -- Soft Reserves from SKULOC table - Retail Channel
+      SELECT * FROM ( SELECT
+      s.sku_id,
+      s.location_number,
+      'R' as channel,
+      'N' as ats_flag,
+      'N' as hard_type,
+      s.retail_reserve as reservation_qty,
+      'A' as reservation_status,
+      'SKULOC' as reservation_program,
+      NULL as reservation_start_ts,
+      NULL as reservation_end_ts,
+      s.updated_ts as reservation_last_modified_ts,
+      s.dotcom_reserve,
+      s.retail_reserve,
+      s.updated_ts,
+      loc.loc_territory
+      FROM skuloc s, location_master loc where s.location_number = loc.loc_number) as retReserve
+
+    columns:
+      sku_id:
+        sql: "base.sku_id"
+        type: "long"
+        alias: "skuId"
+      location_number:
+        sql: "base.location_number"
+        type: "int"
+        alias: "locationNumber"
+      channel_name:
+        sql: "base.channel"
+        type: "string"
+      ats_flag:
+        sql: "base.ats_flag"
+        type: "string"
+        alias: "atsFlag"
+      hard_type:
+        sql: "base.hard_type"
+        type: "string"
+        alias: "hardType"
+      reservation_qty:
+        sql: "base.reservation_qty"
+        type: "long"
+        alias: "reservationQty"
+      reservation_status:
+        sql: "base.reservation_status"
+        type: "string"
+        alias: "reservationStatus"
+      reservation_program:
+        sql: "base.reservation_program"
+        type: "string"
+        alias: "reservationProgram"
+      reservation_start_ts:
+        sql: "base.reservation_start_ts"
+        type: "timestamp"
+        alias: "startTime"
+      reservation_end_ts:
+        sql: "base.reservation_end_ts"
+        type: "timestamp"
+        alias: "endTime"
+      reservation_last_modified_ts:
+        sql: "base.reservation_last_modified_ts"
+        type: "timestamp"
+        alias: "lastModified"
+      dotcom_reserve:
+        sql: "base.dotcom_reserve"
+        type: "long"
+        alias: "dotcomReserve"
+      retail_reserve:
+        sql: "base.retail_reserve"
+        type: "long"
+        alias: "retailReserve"
+      updated_ts:
+        sql: "base.updated_ts"
+        type: "timestamp"
+        alias: "updatedAt"
+
+    computed:
+      reserve_type: "CASE WHEN base.hard_type = 'Y' THEN 'HARD' ELSE 'SOFT' END"
+      is_active: "CASE WHEN base.reservation_status IN ('A', 'P', 'Current') THEN 1 ELSE 0 END"
+
+    filters:
+      skuIdIn:
+        column: "base.sku_id"
+        type: "long[]"
+        op: "IN"
+        max: 5000
+      locationNumberIn:
+        column: "base.location_number"
+        type: "int[]"
+        op: "IN"
+        max: 1000
+      channelNameIn:
+        column: "base.channel"
+        type: "string[]"
+        op: "IN"
+        allowed: ["D", "R", "H"]
+      atsFlagIn:
+        column: "base.ats_flag"
+        type: "string[]"
+        op: "IN"
+        allowed: ["Y", "N", "E"]
+      hardTypeIn:
+        column: "base.hard_type"
+        type: "string[]"
+        op: "IN"
+        allowed: ["Y", "N"]
+      reservationStatusIn:
+        column: "base.reservation_status"
+        type: "string[]"
+        op: "IN"
+        allowed: ["A", "P", "T", "D", "Current"]
+      reservationProgram:
+        column: "base.reservation_program"
+        type: "string"
+        op: "="
+      startAfter:
+        column: "base.reservation_start_ts"
+        type: "timestamp"
+        op: ">="
+      endBefore:
+        column: "base.reservation_end_ts"
+        type: "timestamp"
+        op: "<="
+      lastModifiedAfter:
+        column: "base.reservation_last_modified_ts"
+        type: "timestamp"
+        op: ">="
+      # Location-based filters
+      locationTypeIn:
+        column: "loc.loc_type"
+        type: "string[]"
+        op: "IN"
+        allowed: ["STORE", "DC", "VENDOR", "INTRANSIT"]
+      locationTerritory:
+        column: "loc.loc_territory"
+        type: "string"
+        op: "="
+      locationName:
+        column: "loc.loc_name"
+        type: "string"
+        op: "="
+      # Computed field filters
+      reserveType:
+        column: "reserve_type"
+        type: "string"
+        op: "="
+        allowed: ["HARD", "SOFT"]
+      isActive:
+        column: "is_active"
+        type: "int"
+        op: "="
+        allowed: [0, 1]
+
+    # Join to location_master for location information
+    joins:
+      location:
+        type: "left"
+        table: "location_master loc"
+        on: "loc.loc_number = base.location_number"
+        columns:
+          location_name:
+            sql: "loc.loc_name"
+            type: "string"
+            alias: "locationName"
+          location_type:
+            sql: "loc.loc_type"
+            type: "string"
+            alias: "locationType"
+          region_name:
+            sql: "loc.region_name"
+            type: "string"
+            alias: "regionName"
+          loc_territory:
+            sql: "loc.loc_territory"
+            type: "string"
+            alias: "locTerritory"
+
+    pagination:
+      keysetColumns: ["skuId", "locationNumber", "channel"]
+      defaultPageSize: 50
+      maxPageSize: 500
+      maxUnpaginatedRows: 10000
+      allowOffset: true
+
+    defaultSort:
+      - field: "skuId"
+        direction: "ASC"
+      - field: "locationNumber"
+        direction: "ASC"
+      - field: "channel"
+        direction: "ASC"
+
+    views:
+      ReservesByLocation:
+        name: "ReservesByLocation"
+        description: "All reserves (hard and soft) with unified view"
+        columns:
+          - "sku_id"
+          - "location_number"
+          - "channel_name"
+          - "hard_type"
+          - "ats_flag"
+          - "reservation_qty"
+          - "reservation_status"
+          - "reservation_program"
+          - "reservation_start_ts"
+          - "reservation_end_ts"
+          - "reservation_last_modified_ts"
+        computed:
+          - "reserve_type"
+          - "is_active"
+        filters:
+          - "skuIdIn"
+          - "locationNumberIn"
+          - "channelNameIn"
+          - "hardTypeIn"
+          - "atsFlagIn"
+          - "reservationStatusIn"
+          - "locationTypeIn"
+          - "locationTerritory"
+          - "locationName"
+        includes:
+          - "location"
+        defaultPageSize: 50

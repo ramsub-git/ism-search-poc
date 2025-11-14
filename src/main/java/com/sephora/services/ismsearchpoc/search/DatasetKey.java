@@ -30,5 +30,12 @@ public enum DatasetKey {
      * Reserve header records.
      * Active and historical reserve information.
      */
-    RSVEHR
+    RSVEHR,
+
+
+    /**
+     * Logical reserve maintenance dataset combining hard and soft reserves.
+     * Backed by the UNION query in reserve_maintenance.yml.
+     */
+    RESERVE_MAINTENANCE
 }

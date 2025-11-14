@@ -18,6 +18,10 @@ datasets:
         sql: "loc_type"
         type: string
         alias: "locationType"
+      loc_territory:
+        sql: "loc_territory"
+        type: string
+        alias: "locationTerritory"
       region_number:
         sql: "region_number"
         type: string
@@ -42,6 +46,10 @@ datasets:
         sql: "channel_name"
         type: string
         alias: "channelName"
+      comingled_dc_flag:
+        sql: "comingled_dc_flag"
+        type: string
+        alias: "isComingleDC"
       updated_at:
         sql: "updated_at"
         type: timestamp
@@ -79,6 +87,10 @@ datasets:
         column: "loc_country"
         type: string
         op: "="
+      locTerritory:
+        column: "loc_territory"
+        type: string
+        op: "="
       regionNumber:
         column: "region_number"
         type: int
@@ -88,6 +100,14 @@ datasets:
         type: "int[]"
         op: "IN"
         max: 100
+      locationName:
+        column: "loc_name"
+        type: string
+        op: "LIKE"
+      comingledDCFlag:
+        column: "comingled_dc_flag"
+        type: string
+        op: "="
 
     pagination:
       keysetColumns: ["loc_number"]
@@ -155,6 +175,7 @@ datasets:
           - "loc_number"
           - "loc_name"
         filters:
+          - "locationName"
           - "regionNumberIn"
           - "locationTypeIn"
         distinct: true
@@ -163,12 +184,58 @@ datasets:
             direction: "ASC"
         allowUnpaginated: true
 
-      StoreTypeDropdown:
-        name: "StoreTypeDropdown"
+      LocationTypeDropdown:
+        name: "LocationTypeDropdown"
         columns:
           - "loc_type"
         distinct: true
         defaultSort:
           - field: "loc_type"
+            direction: "ASC"
+        allowUnpaginated: true
+
+      TerritoryDropdown:
+        name: "TerritoryDropdown"
+        columns:
+          - "loc_territory"
+        filters:
+          - "comingledDCFlag"
+        distinct: true
+        defaultSort:
+          - field: "loc_territory"
+            direction: "ASC"
+        allowUnpaginated: true
+
+      LocationDropdown:
+        name: "LocationDropdown"
+        columns:
+          - "loc_number"
+          - "loc_name"
+          - "comingled_dc_flag"
+        filters:
+          - "locationName"
+          - "comingledDCFlag"
+        distinct: true
+        defaultSort:
+          - field: "loc_name"
+            direction: "ASC"
+        allowUnpaginated: true
+
+      WareHouseDropdown:
+        name: "WareHouseDropdown"
+        columns:
+          - "loc_number"
+          - "loc_name"
+          - "loc_territory"
+          - "region_name"
+        filters:
+          - "locationName"
+          - "regionNumberIn"
+          - "locationTypeIn"
+          - "locTerritory"
+          - "comingledDCFlag"
+        distinct: true
+        defaultSort:
+          - field: "loc_name"
             direction: "ASC"
         allowUnpaginated: true
