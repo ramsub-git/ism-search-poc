@@ -84,10 +84,25 @@ public class BatchStepBuilder {
     public void register() {
         parent.register();
     }
-    
+
+
+
     public BatchStepDefinition build() {
         validate();
         return new BatchStepDefinition(this);
+    }
+
+    private void validateBatch() {
+        parent.validate();  // Make parent.validate() protected instead of private
+    }
+
+    public BatchBuilder done() {
+        return parent;
+    }
+
+    // OR just add a done().build() wrapper:
+    public BatchDefinition buildBatch() {
+        return done().build();
     }
     
     private void validate() {
@@ -100,9 +115,5 @@ public class BatchStepBuilder {
         if (batchProcessor == null) {
             throw new IllegalStateException("Step must have a BatchProcessor");
         }
-    }
-
-    public BatchBuilder done() {
-        return parent;
     }
 }

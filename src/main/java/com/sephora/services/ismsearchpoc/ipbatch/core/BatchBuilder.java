@@ -140,19 +140,20 @@ public class BatchBuilder {
         this.afterStepHook = hook;
         return this;
     }
-    
+
     public BatchDefinition build() {
         validate();
-        return new BatchDefinition(this);
-    }
-    
-    public void register() {
-        BatchDefinition definition = build();
-        BatchRegistry.register(definition);
+        BatchDefinition definition = new BatchDefinition(this);
+        BatchRegistry.register(definition);  // Auto-register
         log.info("Registered batch: {}", batchName);
+        return definition;
+    }
+
+    public void register() {
+        build();
     }
     
-    private void validate() {
+    protected void validate() {
         if (steps.isEmpty()) {
             throw new IllegalStateException("Batch must have at least one step");
         }

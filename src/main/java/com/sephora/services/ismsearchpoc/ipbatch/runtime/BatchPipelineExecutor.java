@@ -50,8 +50,9 @@ public class BatchPipelineExecutor {
                 log.info("Batch-level sizing: {}", batchConcurrency.getRationale());
             }
 
-            for (BatchStepDefinition step : batch.getSteps()) {
+            boolean aborted = false;
 
+            for (BatchStepDefinition step : batch.getSteps()) {
                 log.info("Executing step: {}", step.getStepName());
 
                 InitialConcurrency stepConcurrency =
@@ -67,18 +68,21 @@ public class BatchPipelineExecutor {
                 BatchStepResult stepResult = executeStep(
                         batch, step, stepConcurrency, context);
 
-                // FIX 2: Use stepResult (singular) because of @Singular annotation
                 resultBuilder.stepResult(stepResult);
 
                 if (!stepResult.isSuccess() && stepResult.shouldAbort()) {
                     log.error("Step failed, aborting batch: {}", step.getStepName());
                     resultBuilder.aborted(true)
-                            .abortReason("Step failed: " + step.getStepName());
+                            .abortReason("Step failed: " + step.getStepName())
+                            .success(false);
+                    aborted = true;
                     break;
                 }
             }
 
-            resultBuilder.success(true);
+            if (!aborted) {
+                resultBuilder.success(true);
+            }
 
         } catch (Exception e) {
             log.error("Batch execution failed", e);
