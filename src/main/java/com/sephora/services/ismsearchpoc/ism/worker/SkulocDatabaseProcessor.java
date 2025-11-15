@@ -1,11 +1,14 @@
 package com.sephora.services.ismsearchpoc.ism.worker;
 
-import com.sephora.services.ismsearchpoc.framework.model.ExecutionContext;
-import com.sephora.services.ismsearchpoc.framework.model.ProcessingResult;
-import com.sephora.services.ismsearchpoc.framework.worker.BatchProcessor;
+import com.sephora.services.ismsearchpoc.ipbatch.model.ExecutionContext;
+import com.sephora.services.ismsearchpoc.ipbatch.model.ProcessingResult;
+import com.sephora.services.ismsearchpoc.ipbatch.worker.BatchProcessor;
 import com.sephora.services.ismsearchpoc.ism.model.SkulocRecord;
+import com.sephora.services.ismsearchpoc.processing.ContextualStepGuard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -17,7 +20,10 @@ import java.util.List;
  */
 @Component
 public class SkulocDatabaseProcessor implements BatchProcessor<SkulocRecord, Void> {
-    
+    @Autowired
+    @Qualifier("BATCH_PROCESS")
+    private ContextualStepGuard<SkulocRecord> batchProcessGuard;
+
     private static final Logger log = LoggerFactory.getLogger(SkulocDatabaseProcessor.class);
     
     // TODO: Inject these once we have them
@@ -25,8 +31,7 @@ public class SkulocDatabaseProcessor implements BatchProcessor<SkulocRecord, Voi
     // private final LocationLookupService locationService;
     // private final ReserveCalcService reserveCalcService;
     
-    @Override
-    public List<ProcessingResult<Void>> processBatch(List<SkulocRecord> records, ExecutionContext context) 
+    public List<ProcessingResult<Void>> guardProcessBatch(List<SkulocRecord> records, ExecutionContext context)
             throws Exception {
         
         log.debug("Processing batch of {} skuloc records", records.size());
@@ -55,7 +60,21 @@ public class SkulocDatabaseProcessor implements BatchProcessor<SkulocRecord, Voi
         
         return results;
     }
-    
+
+    public List<ProcessingResult<Void>> processBatch(List<SkulocRecord> records, ExecutionContext context) {
+        return batchProcessGuard.execute(
+                () -> {
+                    try {
+                        return guardProcessBatch(records, context);
+                    } catch (Exception e) {
+                        // wrap as unchecked so the lambda doesn't throw a checked exception
+                        throw new RuntimeException("Error processBatch", e);
+                    }
+                },
+                ""
+        );
+    }
+
     /**
      * Validate a skuloc record
      */

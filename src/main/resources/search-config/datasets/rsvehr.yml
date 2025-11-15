@@ -29,11 +29,6 @@ datasets:
         sql: "base.reservation_qty"
         type: long
         alias: "reservationQty"
-
-      channel:
-        sql: "channel"
-        type: string
-
       reservation_status:
         sql: "base.reservation_status"
         type: string
@@ -87,13 +82,6 @@ datasets:
         type: string
         op: "IN"
         allowed: ["A", "P", "T","D"]
-
-      channel:
-        column: "channel"
-        type: string
-        op: "="
-        allowed: [ "D", "R" ]
-
       reservationStatus:
         column: "base.reservation_status"
         type: string
@@ -173,13 +161,14 @@ datasets:
         columns:
           - "sku_id"
           - "location_number"
+#          - "channel_name"
           - "reservation_qty"
           - "reservation_start_ts"
           - "reservation_end_ts"
         filters:
           - "skuIdIn"
           - "locationNumberIn"
-          - "channel"
+#          - "channelNameIn"
           - "reservationStatus"
           - "locationTypeIn"
           - "locationTerritory"

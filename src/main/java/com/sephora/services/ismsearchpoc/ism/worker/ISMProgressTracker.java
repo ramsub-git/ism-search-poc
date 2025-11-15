@@ -1,7 +1,7 @@
 package com.sephora.services.ismsearchpoc.ism.worker;
 
-import com.sephora.services.ismsearchpoc.framework.model.ProcessingResult;
-import com.sephora.services.ismsearchpoc.framework.worker.ProgressTracker;
+import com.sephora.services.ismsearchpoc.ipbatch.model.ProcessingResult;
+import com.sephora.services.ismsearchpoc.ipbatch.worker.ProgressTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,14 @@ public class ISMProgressTracker implements ProgressTracker<String, Void> {
     
     // TODO: Inject ISMMetricsCollector when ready
     // private final ISMMetricsCollector metricsCollector;
-    
+
+
+
+    @Override
+    public void onStart(int totalWorkItems) {
+        log.info("Starting batch with {} work items", totalWorkItems);
+    }
+
     @Override
     public void onWorkItemStart(String workItem) {
         log.info("Starting processing of file: {}", workItem);
@@ -50,4 +57,12 @@ public class ISMProgressTracker implements ProgressTracker<String, Void> {
         double percentComplete = (double) processed / total * 100;
         log.info("Progress: {}/{} files ({:.1f}%)", processed, total, percentComplete);
     }
+
+    @Override
+    public void onComplete(int itemsProcessed, long recordsProcessed, int totalErrors) {
+        log.info("Batch complete: {} items, {} records, {} errors",
+                itemsProcessed, recordsProcessed, totalErrors);
+    }
+
+
 }

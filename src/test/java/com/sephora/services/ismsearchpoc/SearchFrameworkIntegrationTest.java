@@ -126,19 +126,26 @@ class SearchFrameworkIntegrationTest {
         }
 
 //        @Test
-//        @Order(6)
-//        @DisplayName("Store Type Dropdown")
-//        void testStoreTypeDropdown() {
+//        @Order(8)
+//        @DisplayName("Reserve Search - Active Reserves by Channel & Status")
+//        void testReserveSearch() {
+//            Map<String, Object> filters = new HashMap<>();
+//            filters.put("channel", "D");             // matches filters.channel in rsvehr.yml
+//            filters.put("reservationStatus", "A");   // matches filters.reservationStatus
+//
 //            SearchRequest request = SearchRequest.builder()
-//                    .view("StoreTypeDropdown")
-//                    .paginate(false)
+//                    .view("ActiveReserves")          // matches view in rsvehr.yml
+//                    .filters(filters)
+//                    // Let the default sort from config apply (lastModified desc)
+//                    .size(10)
 //                    .build();
 //
 //            SearchResponse<Map<String, Object>> response = searchService.search(
-//                    DatasetKey.LOCATION_MASTER, request);
+//                    DatasetKey.RSVEHR, request);
 //
 //            assertThat(response).isNotNull();
 //        }
+
 
         @Test
         @Order(7)
@@ -361,31 +368,21 @@ class SearchFrameworkIntegrationTest {
             assertThat(response).isNotNull();
         }
 
-//        @Test
-//        @Order(8)
-//        @DisplayName("Reserve Search")
-//        void testReserveSearch() {
-//            Map<String, Object> filters = new HashMap<>();
-//            filters.put("channel", "D");
-//            filters.put("reservationStatus", "A");
-//
-//            SearchRequest request = SearchRequest.builder()
-//                    .view("ActiveReserves")
-//                    .filters(filters)
-//                    .sort(Collections.singletonList(
-//                            SortSpec.builder()
-//                                    .field("hard_reservation_start_ts")
-//                                    .direction("DESC")
-//                                    .build()
-//                    ))
-//                    .size(10)
-//                    .build();
-//
-//            SearchResponse<Map<String, Object>> response = searchService.search(
-//                    DatasetKey.RSVEHR, request);
-//
-//            assertThat(response).isNotNull();
-//        }
+        @Test
+        @Order(6)
+        @DisplayName("Location Type Dropdown")
+        void testLocationTypeDropdown() {
+            SearchRequest request = SearchRequest.builder()
+                    .view("LocationTypeDropdown")   // matches location_master.yml
+                    .paginate(false)                // allowUnpaginated: true in config
+                    .build();
+
+            SearchResponse<Map<String, Object>> response = searchService.search(
+                    DatasetKey.LOCATION_MASTER, request);
+
+            assertThat(response).isNotNull();
+        }
+
 
         @Test
         @Order(9)

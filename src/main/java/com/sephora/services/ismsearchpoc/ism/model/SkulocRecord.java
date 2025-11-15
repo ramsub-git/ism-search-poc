@@ -2,7 +2,6 @@ package com.sephora.services.ismsearchpoc.ism.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
 /**
  * DTO for Skuloc CSV records
  * Represents the 10-field CSV format from MCS

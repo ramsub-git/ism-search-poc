@@ -1,11 +1,11 @@
 package com.sephora.services.ismsearchpoc.ism.service;
 
-import com.sephora.services.ismsearchpoc.framework.engine.ParallelBatchEngine;
-import com.sephora.services.ismsearchpoc.framework.metrics.ISMMetricsCollector;
-import com.sephora.services.ismsearchpoc.framework.metrics.MetricsSnapshot;
-import com.sephora.services.ismsearchpoc.framework.model.ExecutionContext;
-import com.sephora.services.ismsearchpoc.framework.model.ExecutionResult;
-import com.sephora.services.ismsearchpoc.framework.runtime.ISMRuntimeManager;
+import com.sephora.services.ismsearchpoc.ipbatch.engine.ParallelBatchEngine;
+import com.sephora.services.ismsearchpoc.ipbatch.metrics.ISMMetricsCollector;
+import com.sephora.services.ismsearchpoc.ipbatch.metrics.MetricsSnapshot;
+import com.sephora.services.ismsearchpoc.ipbatch.model.ExecutionContext;
+import com.sephora.services.ismsearchpoc.ipbatch.model.ExecutionResult;
+import com.sephora.services.ismsearchpoc.ipbatch.runtime.ISMRuntimeManager;
 import com.sephora.services.ismsearchpoc.ism.model.SkulocRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +56,9 @@ public class ISMLoadOrchestrator {
         
         // Setup execution context
         ExecutionContext context = new ExecutionContext();
-        context.put("folderPath", blobFolderPath);
+        context.setAttribute("folderPath", blobFolderPath);
         if (filePattern != null) {
-            context.put("filePattern", filePattern);
+            context.setAttribute("filePattern", filePattern);
         }
         
         // Start periodic goal evaluation (every 5 minutes)

@@ -1,6 +1,6 @@
 package com.sephora.services.ismsearchpoc.ism.mapper;
 
-import com.sephora.services.ismsearchpoc.framework.utility.mapper.RecordMapper;
+import com.sephora.services.ismsearchpoc.ipbatch.utility.mapper.RecordMapper;
 import com.sephora.services.ismsearchpoc.ism.model.SkulocRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
